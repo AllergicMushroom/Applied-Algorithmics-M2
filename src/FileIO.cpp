@@ -25,7 +25,7 @@ struct Settings FileIO::readSettingFile(const std::string& filename)
         line = readNextLine(file, *pos);
         std::vector<std::string> tokens = tokenizeString(line, " ");
         if(tokens.size() != 4){
-            printf("wrong line size in \"",line,"\"" );
+            printf("wrong line size in \"",line.c_str(),"\"" );
             exit(EXIT_FAILURE);
         }
         int pixelColor = atoi((tokens[1]+tokens[2]+tokens[2]).c_str()); // Convert (xxx,yyy,zzz) in Int(xxxyyyzzz) 
@@ -89,7 +89,7 @@ Graph FileIO::readBMP(const std::string& filename, const Settings& params)
             }
             catch(const std::exception& e)
             {
-                std::cerr << e.what() << "\nColor ",color," not found in settings.\n";
+                std::cerr << e.what() << "\nColor " << color << " not found in settings.\n";
             }
             
             std::vector<int> adjListPoint;
@@ -126,7 +126,7 @@ Graph FileIO::readGraph(const std::string& filename)
         std::vector<std::string> vertexNeighborsStr = tokenizeString(components[1], " ");
 
         std::vector<int> vertexNeighbors = std::vector<int>(vertexNeighborsStr.size());
-        for (int i = 0; i < vertexNeighborsStr.size(); ++i)
+        for (std::size_t i = 0; i < vertexNeighborsStr.size(); ++i)
         {
             vertexNeighbors[i] = std::atoi(vertexNeighborsStr[i].c_str());
         }
