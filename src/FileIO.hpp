@@ -15,6 +15,7 @@ class FileIO
         FileIO() = default;
         
         struct Settings readSettingFile(const std::string& filename);
+        void printSettings(const Settings& settings);
         Graph readBMP(const std::string& filename, const Settings& params);
         Graph readGraph(const std::string& filename);
 };
