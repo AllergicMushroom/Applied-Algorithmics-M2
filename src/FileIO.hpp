@@ -18,4 +18,5 @@ class FileIO
         void printSettings(const Settings& settings);
         Graph readBMP(const std::string& filename, const Settings& params);
         Graph readGraph(const std::string& filename);
+        void printGraph(const Settings& settings);
 };

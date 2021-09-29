@@ -112,7 +112,7 @@ Graph FileIO::readBMP(const std::string& filename, const Settings& params)
             if(j != 0)
                 adjListPoint.push_back(j - 1 + width*i);
             if(j != width - 1)
-                adjListPoint.push_back(j + 1 + width*1);
+                adjListPoint.push_back(j + 1 + width*i);
             adjancecyList.push_back(adjListPoint);
         }
     }
