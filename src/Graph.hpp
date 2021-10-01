@@ -10,7 +10,7 @@ class Graph
             mAdjancencyList(adjancecyList),
             mVerticesColors(verticesColors)
         {}
-
+        void printGraph();
         inline const std::vector<int>& getNeighbors(int vertex) { return mAdjancencyList[vertex]; }
         inline int getColor(int vertex) { return mVerticesColors[vertex]; }
 
