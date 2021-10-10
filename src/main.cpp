@@ -10,7 +10,13 @@ void printUsage()
 int main(int argc, char** argv)
 {
     FileIO fileIO = FileIO();
-
+    Settings se = fileIO.readSettingFile("../data/Config1.txt");
+    fileIO.printSettings(se);
+    std::cout<<"\n";
+    Graph g = fileIO.readBMP("../data/Img1.ppm", se);
+    g.printGraph();
+    std::cout<<"\n";
+    return 0;
     if (argc  == 2)
     {
 
@@ -23,6 +29,5 @@ int main(int argc, char** argv)
     {
         printUsage();
     }
-
     return 0;
 }
