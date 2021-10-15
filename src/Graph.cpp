@@ -11,6 +11,7 @@ void Graph::printGraph(){
                 cout<<", ";
             cout<<this->mAdjancencyList.at(i).at(j);
         }
+        cout<<endl;
     }
 }
 void Graph::ProcessDistances(){
@@ -26,13 +27,18 @@ void Graph::ProcessDistances(){
 }
 void Graph::generateDigraph(){
     // Generate node list.
-    this->mNodes = new vector<lemon::ListDigraph::Node>(this->mAdjancencyList.size());
+
+    this->mNodes =new vector<lemon::ListDigraph::Node>(this->mAdjancencyList.size());
+    this->mGraph = new lemon::ListDigraph();
+
+    std::cout<<"<Graph::generateDigraph> Generate Node List\n";
     for (size_t i = 0; i < this->mAdjancencyList.size(); ++i) {
         this->mNodes->at(i) = this->mGraph->addNode();
     }
 
     // Generate Digraph.
-    this->mGraph = new lemon::ListDigraph();
+    std::cout<<"<Graph::generateDigraph> Generate Digraph\n";
+
     for (size_t i = 0; i < this->mAdjancencyList.size(); ++i) {
         for (size_t j = 0; j < this->mAdjancencyList.at(i).size(); ++j) {
             this->mGraph->addArc(this->mNodes->at(i),this->mNodes->at(mAdjancencyList.at(i).at(j)));

@@ -58,12 +58,11 @@ void FileIO::printSettings(const Settings& settings)
 Graph FileIO::readBMP(const std::string& filename, const Settings& params)
 {
     std::string file = readFileContent(filename);
-    size_t pos = 0;
+    size_t pos = -1;
 
     // Read the first line, should be "P3" for rgb.
     std::string line = readNextLine(file, pos);
     if(line.compare("P3") != 1){
-        std::cout<<"kkfds"<<line<<"LALALA\n";
         printf("wrong color code. Should be <P3> on line 1.\n");
         exit(EXIT_FAILURE);
     }

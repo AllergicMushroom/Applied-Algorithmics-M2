@@ -10,11 +10,14 @@ void printUsage(std::string name)
 int main(int argc, char** argv)
 {
     FileIO fileIO;
-    std::string img = "../data/img1.ppm";
+    std::string img = "../data/Img1.ppm";
     std::string config = "../data/Config1.txt";
 
     Settings settings = fileIO.readSettingFile(config, true);
-    fileIO.readBMP(img, settings);
+    Graph g = fileIO.readBMP(img, settings);
+    g.printGraph();
+    int a = 3;
+    std::cout<<a+4;
     return 0;
 
 //    if (argc >= 2)
