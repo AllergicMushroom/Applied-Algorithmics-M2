@@ -2,47 +2,53 @@
 
 #include "FileIO.hpp"
 
-void printUsage()
+void printUsage(std::string name)
 {
-    std::cout << "Usage: " << argv[1] << " <filename> <settings file if instance is bmp>\n";
+    std::cout << "Usage: " << name << " <filename> <settings file if instance is bmp>\n";
 }
 
 int main(int argc, char** argv)
 {
+    FileIO fileIO;
+    std::string img = "../data/img1.ppm";
+    std::string config = "../data/Config1.txt";
 
-    if (argc >= 2)
-    {
-        mode = argv[2];
+    Settings settings = fileIO.readSettingFile(config, true);
+    fileIO.readBMP(img, settings);
+    return 0;
 
-        if (mode == "check")
-        {
-            if (argc == 4)
-            {
+//    if (argc >= 2)
+//    {
+//        std::string mode = argv[1];
 
-            }
-            else if (argc == 5)
-            {
-
-            }
-            else
-            {
-                printUsage();
-                return -1;
-            }
-        }
-
-
+//        if (mode == "check")
+//        {
+//            if (argc == 4)
+//            {
+//
+//            }
+//            else if (argc == 5)
+//            {
+//
+//            }
+//            else
+//            {
+//                printUsage(argv[0]);
+//                return -1;
+//            }
+//        }
 
         fileIO.readGraph(std::string(argv[1]));
-    }
-    else if (argc == 3)
-    {
-        Settings settings = fileIO.readSettingFile(std::string(argv[2]));
-        fileIO.readBMP(std::string(argv[1]), settings);
-    }
-    else
-    {
-        printUsage();
-    }
-    return 0;
+//    }
+//    else if (argc == 3)
+//    {
+//        Settings settings = fileIO.readSettingFile(std::string(argv[2]));
+//        fileIO.readBMP(std::string(argv[1]), settings);
+//    }
+//    else
+//    {
+//        printUsage(argv[0]);
+//    }
+//    return 0;
+//    std::cout<<"giga\n";
 }

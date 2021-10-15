@@ -11,7 +11,7 @@ static std::string readFileContent(const std::string& filepath);
 static std::string readNextLine(const std::string& str, size_t& currentPosition);
 static std::vector<std::string> tokenizeString(const std::string& str, const char* token);
 
-struct Settings FileIO::readSettingFile(const std::string& filename)
+struct Settings FileIO::readSettingFile(const std::string& filename, bool _verbose = false)
 {
     std::string file = readFileContent(filename);
     size_t pos = -1; // It does not count the first line otherwise. TODO: Fix that.
@@ -21,7 +21,7 @@ struct Settings FileIO::readSettingFile(const std::string& filename)
     int scale = atoi(line.c_str());
     // std::cout<<file<<"    "<<line<<"\n "<<scale<<" lalal";
     line = readNextLine(file, pos);
-    while(line != ""){
+    while(!line.empty()){
         std::vector<std::string> tokens = tokenizeString(line, " ");
         if(tokens.size() != 4){
             std::cout<<"wrong line size ("<<tokens.size()<<") in \""<<line.c_str()<<"\"";
@@ -36,6 +36,10 @@ struct Settings FileIO::readSettingFile(const std::string& filename)
     struct Settings params;
     params.scale = scale;
     params.mapPixelValue = mapPixelValue;
+    if(_verbose){
+        std::cout<<"<FileIO::readSettingFile> Display Settings:\n";
+        printSettings(params);
+    }
     return params;
 }
 
@@ -44,7 +48,7 @@ void FileIO::printSettings(const Settings& settings)
     std::cout<<"scale: "<<settings.scale<<"\nPixel to int:\n";
     for(const auto& elem : settings.mapPixelValue)
     {
-        std::string zeros = "";
+        std::string zeros;
         for(size_t i=0; i <(9-std::to_string(elem.first).length()); ++i)
             zeros += "0";
         std::cout << "  "<< zeros << elem.first << " => " << elem.second<<"\n";
@@ -54,12 +58,13 @@ void FileIO::printSettings(const Settings& settings)
 Graph FileIO::readBMP(const std::string& filename, const Settings& params)
 {
     std::string file = readFileContent(filename);
-    size_t pos = -1;
+    size_t pos = 0;
 
     // Read the first line, should be "P3" for rgb.
     std::string line = readNextLine(file, pos);
     if(line.compare("P3") != 1){
-        printf("wrong color code. Should be <P3> on line 1.");
+        std::cout<<"kkfds"<<line<<"LALALA\n";
+        printf("wrong color code. Should be <P3> on line 1.\n");
         exit(EXIT_FAILURE);
     }
     
@@ -71,7 +76,7 @@ Graph FileIO::readBMP(const std::string& filename, const Settings& params)
     // Read the dimension.
     std::vector<std::string> imgSize = tokenizeString(line, " ");
     if(imgSize.size() != 2){
-        printf("wrong size. Should be a matrix.");
+        printf("wrong size. Should be a matrix.\n");
         exit(EXIT_FAILURE);
     }
     int width = atoi(imgSize[0].c_str());
@@ -80,7 +85,7 @@ Graph FileIO::readBMP(const std::string& filename, const Settings& params)
     // Read the bound over the pixel color. Should be 255.
     line = readNextLine(file, pos);
     if( line != "255\n"){
-        printf("wrong color cap. Should be a 255.");
+        printf("wrong color cap. Should be a 255.\n");
         exit(EXIT_FAILURE);
     }
 
@@ -129,7 +134,7 @@ Graph FileIO::readGraph(const std::string& filename)
     size_t currentPosition = 0;
 
     std::string line = instance.substr(0, instance.find_first_of(EOL));
-    while (line != "")
+    while (!line.empty())
     {
         std::vector<std::string> components = tokenizeString(line, ":");
 
