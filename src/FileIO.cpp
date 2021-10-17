@@ -351,7 +351,7 @@ Graph FileIO::readGraph(const std::string& filename)
         }
     }
 
-    int firstSpaceIndex = line.find_first_of(' ');
+    int firstSpaceIndex = static_cast<int>(line.find_first_of(' '));
     line = line.substr(firstSpaceIndex + 1LL); /* Neighbors */
 
     int vertex = 0;
@@ -390,10 +390,10 @@ Graph FileIO::readGraph(const std::string& filename)
     {
         adjacencyList.push_back(std::vector<int>());
 
-        int firstSpaceIndex = line.find_first_of(' ');
+        firstSpaceIndex = static_cast<int>(line.find_first_of(' '));
         line = line.substr(firstSpaceIndex + 1LL); /* Neighbors */
 
-        auto iterator = line.begin();
+        iterator = line.begin();
         while (iterator != line.end())
         {
             auto tokenBegin = line.find_first_not_of(' ', iterator - line.begin());
@@ -426,56 +426,6 @@ Graph FileIO::readGraph(const std::string& filename)
     }
 
     return Graph(adjacencyList, std::vector<int>(adjacencyList.size(), 1));
-}
-
-static std::string readFileContent(const std::string& filepath)
-{
-	std::string contents;
-	std::ifstream instanceFile(filepath, std::ios::in | std::ios::binary);
-	if (instanceFile)
-	{
-		instanceFile.seekg(0, std::ios::end);
-		contents.resize(instanceFile.tellg());
-
-		instanceFile.seekg(0, std::ios::beg);
-		instanceFile.read(&contents[0], contents.size());
-
-		instanceFile.close();
-	}
-	else
-    {
-        std::cerr << "Could not open instance file " << filepath << ".\n";
-    }
-
-	return contents;
-}
-
-static std::string readNextLine(const std::string& str, size_t& currentPosition)
-{
-	size_t nextLinePosition = str.find(EOL, currentPosition) + strlen(EOL);
-	size_t endOfLine = str.find(EOL, nextLinePosition) + strlen(EOL);
-	currentPosition = nextLinePosition;
-	return str.substr(nextLinePosition, endOfLine - nextLinePosition);
-}
-
-static std::vector<std::string> tokenizeString(const std::string& str, const char* token)
-{
-	size_t begin = 0;
-	size_t position = begin;
-	size_t end = str.length();
-	std::vector<std::string> tokens(0);
-	while (position != end)
-	{
-		position = str.find(token, begin);
-		if (position == std::string::npos)
-			position = end;
-
-		tokens.push_back(str.substr(begin, position - begin)); // substr expects count as second parameters, not a position
-
-		begin = str.find(token, position) + 1;
-	}
-
-	return tokens;
 }
 
 std::ostream& operator<<(std::ostream& out, const Settings& settings)
