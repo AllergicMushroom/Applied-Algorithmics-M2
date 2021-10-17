@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Graph.hpp"
+#include "Solution.hpp"
 
 #include <iostream>
 #include <unordered_map>
@@ -20,8 +21,11 @@ public:
     FileIO() = delete;
     ~FileIO() = delete;
         
-    static Settings readSettingFile(const std::string& filename);
+    static Settings readSettings(const std::string& filename);
 
     static Graph readBMP(const std::string& filename, const Settings& settings);
     static Graph readGraph(const std::string& filename);
+
+    static Solution readBMPSolution(const std::string& filename);
+    static Solution readGraphSolution(const std::string& filename);
 };

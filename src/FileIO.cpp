@@ -10,7 +10,7 @@ static std::string readFileContent(const std::string& filepath);
 static std::string readNextLine(const std::string& str, size_t& currentPosition);
 static std::vector<std::string> tokenizeString(const std::string& str, const char* token);
 
-Settings FileIO::readSettingFile(const std::string& filename)
+Settings FileIO::readSettings(const std::string& filename)
 {
     std::ifstream file(filename, std::ios::in);
     if (!file.good()) {
@@ -426,6 +426,67 @@ Graph FileIO::readGraph(const std::string& filename)
     }
 
     return Graph(adjacencyList, std::vector<int>(adjacencyList.size(), 1));
+}
+
+Solution FileIO::readBMPSolution(const std::string& filename)
+{
+    return Solution();
+}
+
+Solution FileIO::readGraphSolution(const std::string& filename)
+{
+    std::ifstream file(filename, std::ios::in);
+    if (!file.good()) {
+        std::cerr << "Read error: Could not open file " << filename << "." << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    Solution solution;
+
+    std::string line;
+
+    /* Get next line after empty lines and comments. */
+    while (std::getline(file, line))
+    {
+        if (line.size() > 0)
+        {
+            if (line[0] != '#')
+            {
+                break;
+            }
+        }
+    }
+
+    auto iterator = line.begin();
+    while (iterator != line.end())
+    {
+        auto tokenBegin = line.find_first_not_of(' ', iterator - line.begin());
+        auto tokenEnd = line.find_first_of(' ', iterator - line.begin());
+        if (tokenEnd == std::string::npos)
+        {
+            tokenEnd = line.size();
+        }
+
+        int result = std::stoi(line.substr(tokenBegin, tokenEnd - tokenBegin));
+        if (result < 0)
+        {
+            std::cerr << "Read error: Vertex indices must be positive.\n";
+            exit(EXIT_FAILURE);
+        }
+
+        solution.centers.push_back(result);
+
+        if (tokenEnd == line.size())
+        {
+            iterator = line.end();
+        }
+        else
+        {
+            iterator += (tokenEnd - tokenBegin + 1);
+        }
+    }
+
+    return solution;
 }
 
 std::ostream& operator<<(std::ostream& out, const Settings& settings)
