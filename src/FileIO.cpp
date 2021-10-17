@@ -144,7 +144,7 @@ Graph FileIO::readBMP(const std::string& filename, const Settings& settings)
         }
     }
 
-    int spaceIndex = static_cast<int>(line.find_first_of(' ', 0));
+    int spaceIndex = static_cast<int>(line.find_first_of(' '));
     int width = std::stoi(line.substr(0, spaceIndex));
     int height = std::stoi(line.substr(spaceIndex + 1LL));
 
@@ -329,30 +329,100 @@ Graph FileIO::readBMP(const std::string& filename, const Settings& settings)
 
 Graph FileIO::readGraph(const std::string& filename)
 {
-    std::string instance = readFileContent(filename);
+    std::ifstream file(filename, std::ios::in);
+    if (!file.good()) {
+        std::cerr << "Read error: Could not open file " << filename << "." << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
-    std::vector<std::vector<int>> adjacencyList;
-    std::vector<int> verticesColors;
+    std::vector<std::vector<int>> adjacencyList(1, std::vector<int>());
 
-    size_t currentPosition = 0;
+    std::string line;
 
-    std::string line = instance.substr(0, instance.find_first_of(EOL));
-    while (!line.empty())
+    /* Get next line after empty lines and comments. */
+    while (std::getline(file, line))
     {
-        std::vector<std::string> components = tokenizeString(line, ":");
-
-        int vertex = std::atoi(components[0].c_str());
-        std::vector<std::string> vertexNeighborsStr = tokenizeString(components[1], " ");
-
-        std::vector<int> vertexNeighbors = std::vector<int>(vertexNeighborsStr.size());
-        for (std::size_t i = 0; i < vertexNeighborsStr.size(); ++i)
+        if (line.size() > 0)
         {
-            vertexNeighbors[i] = std::atoi(vertexNeighborsStr[i].c_str());
+            if (line[0] != '#')
+            {
+                break;
+            }
+        }
+    }
+
+    int firstSpaceIndex = line.find_first_of(' ');
+    line = line.substr(firstSpaceIndex + 1LL); /* Neighbors */
+
+    int vertex = 0;
+
+    auto iterator = line.begin();
+    while (iterator != line.end())
+    {
+        auto tokenBegin = line.find_first_not_of(' ', iterator - line.begin());
+        auto tokenEnd = line.find_first_of(' ', iterator - line.begin());
+        if (tokenEnd == std::string::npos)
+        {
+            tokenEnd = line.size();
         }
 
-        adjacencyList[vertex] = vertexNeighbors;
+        int result = std::stoi(line.substr(tokenBegin, tokenEnd - tokenBegin));
+        if (result < 0)
+        {
+            std::cerr << "Read error: Vertex indices must be positive.\n";
+            exit(EXIT_FAILURE);
+        }
 
-        line = readNextLine(instance, currentPosition);
+        adjacencyList[vertex].push_back(result);
+
+        if (tokenEnd == line.size())
+        {
+            iterator = line.end();
+        }
+        else
+        {
+            iterator += (tokenEnd - tokenBegin + 1);
+        }
+    }
+
+    vertex = 1;
+    while (std::getline(file, line))
+    {
+        adjacencyList.push_back(std::vector<int>());
+
+        int firstSpaceIndex = line.find_first_of(' ');
+        line = line.substr(firstSpaceIndex + 1LL); /* Neighbors */
+
+        auto iterator = line.begin();
+        while (iterator != line.end())
+        {
+            auto tokenBegin = line.find_first_not_of(' ', iterator - line.begin());
+            auto tokenEnd = line.find_first_of(' ', iterator - line.begin());
+            if (tokenEnd == std::string::npos)
+            {
+                tokenEnd = line.size();
+            }
+
+            int result = std::stoi(line.substr(tokenBegin, tokenEnd - tokenBegin));
+            if (result < 0)
+            {
+                std::cerr << "Read error: Vertex indices must be positive.\n";
+                exit(EXIT_FAILURE);
+            }
+
+            adjacencyList[vertex].push_back(result);
+
+            if (tokenEnd == line.size())
+            {
+                iterator = line.end();
+            }
+            else
+            {
+                iterator += (tokenEnd - tokenBegin + 1);
+            }
+        }
+
+        vertex += 1;
     }
 
     return Graph(adjacencyList, std::vector<int>(adjacencyList.size(), 1));
