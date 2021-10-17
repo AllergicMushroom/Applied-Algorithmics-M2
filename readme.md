@@ -12,6 +12,12 @@ In this project, the goal is to cleverly build vaccination centers in a city so 
 * Testing your algorithms on different instances.
 * Possible extensions.
 
+We solve two problems:
+
+* One in which you have a radius **r** and the goal is to minimise the number of built vaccination centers so that every vertex is at most distance **r** to the closest center.
+
+* One in which you have a maximum number of centers **k** and the goal is to minimise the radius so that all vertices are at most radius distance to the closest center while building at most **k** centers.
+
 ## Files
 
 For all files, if you want to include comments, we advise you do so at the beginning of the file. You can also write some in between categories, but comments inside a category may crash the program. Comments after a parsed line may also crash the program.
@@ -80,7 +86,7 @@ For graph instances:
 We have multiple solvers:
 
 * Brute Force, represented by "BB"
-* Mixed Integer Programming, represented by "MIP"
+* Mixed Integer Programming, represented by "MIP". Note that this is solved by the commercial solver Gurobi, for which you need a licence.
 * Others to come
 
 For PPM instances:
