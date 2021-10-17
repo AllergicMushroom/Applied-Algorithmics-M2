@@ -5,6 +5,7 @@
 
 struct Solution
 {
+    bool isValid = false;
     std::vector<int> centers; /* Vertices in which vaccinations centers are constructed. */
 
     friend std::ostream& operator<<(std::ostream& out, const Solution& solution)
