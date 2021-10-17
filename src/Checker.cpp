@@ -7,14 +7,14 @@ bool Checker::checkSolution(const Graph& graph, const Solution& solution, int ma
 {
     for (int i = 0; i < graph.getNbVertices(); ++i)
     {
-        int minDist = std::numeric_limits<int>::infinity();
+        int minDist = std::numeric_limits<int>::max();
 
         for (int center : solution.centers)
         {
             int dist = graph.getDistance(i, center);
             if (dist < minDist)
             {
-            minDist = dist;
+                minDist = dist;
             }
         }
 
