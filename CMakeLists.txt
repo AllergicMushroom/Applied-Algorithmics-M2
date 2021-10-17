@@ -5,14 +5,14 @@ set(CMAKE_CXX_STANDARD 17)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
     set (UNIX TRUE)
-    add_definitions(-DPLATFORM_UNIX)
+    add_compile_definitions(PLATFORM_LINUX)
 
     set(CMAKE_CXX_FLAGS "-Wall")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fprofile-arcs -ftest-coverage")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES MSVC)
 	set(WINDOWS TRUE)
-    add_definitions(-DPLATFORM_WINDOWS)
+    add_compile_definitions(PLATFORM_WINDOWS)
     
     set(CMAKE_CXX_FLAGS "/W4 /EHsc")
     set(CMAKE_CXX_FLAGS_DEBUG "/Zi /Od")
@@ -40,3 +40,6 @@ file(GLOB_RECURSE COMMON_SOURCES
 
 # Executables
 add_executable(${APP_NAME} ${COMMON_SOURCES})
+
+# Data
+add_custom_command(TARGET ${APP_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/data $<TARGET_FILE_DIR:${APP_NAME}>/data)

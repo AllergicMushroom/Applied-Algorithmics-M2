@@ -1,7 +1,6 @@
 #include "FileIO.hpp"
 
-#include <map>
-#include <cstring>
+#include <array>
 #include <fstream>
 #include <iostream>
 
@@ -11,116 +10,321 @@ static std::string readFileContent(const std::string& filepath);
 static std::string readNextLine(const std::string& str, size_t& currentPosition);
 static std::vector<std::string> tokenizeString(const std::string& str, const char* token);
 
-struct Settings FileIO::readSettingFile(const std::string& filename, bool _verbose = false)
+Settings FileIO::readSettingFile(const std::string& filename)
 {
-    std::string file = readFileContent(filename);
-    size_t pos = -1; // It does not count the first line otherwise. TODO: Fix that.
-    std::map<int, int> mapPixelValue;
-    // Read first line (scale)
-    std::string line = readNextLine(file, pos);
-    int scale = atoi(line.c_str());
-    // std::cout<<file<<"    "<<line<<"\n "<<scale<<" lalal";
-    line = readNextLine(file, pos);
-    while(!line.empty()){
-        std::vector<std::string> tokens = tokenizeString(line, " ");
-        if(tokens.size() != 4){
-            std::cout<<"wrong line size ("<<tokens.size()<<") in \""<<line.c_str()<<"\"";
+    std::ifstream file(filename, std::ios::in);
+    if (!file.good()) {
+        std::cerr << "Read error: Could not open file " << filename << "." << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    Settings settings;
+
+    std::string line;
+
+    /* Get next line after empty lines and comments. */
+    while (std::getline(file, line))
+    {
+        if (line.size() > 0)
+        {
+            if (line[0] != '#')
+            {
+                break;
+            }
+        }
+    }
+
+    settings.scale = std::stoi(line);
+
+    while (std::getline(file, line))
+    {
+        /* Skip empty lines and comments. */
+        int lineLength = static_cast<int>(line.size());
+        if (lineLength == 0)
+        {
+            continue;
+        }
+        else
+        {
+            if (line[0] == '#')
+            {
+                continue;
+            }
+        }
+
+        /*
+        * 0 is for color index.
+        * 1 is for red component.
+        * 2 is for green component.
+        * 3 is for blue component.
+        */
+        std::array<int, 4> colorValues;
+        int i = 0;
+
+        auto iterator = line.begin();
+        while (iterator != line.end())
+        {
+            auto tokenBegin = line.find_first_not_of(' ', iterator - line.begin());
+            auto tokenEnd = line.find_first_of(' ', iterator - line.begin());
+            if (tokenEnd == std::string::npos)
+            {
+                tokenEnd = lineLength;
+            }
+
+            int result = std::stoi(line.substr(tokenBegin, tokenEnd - tokenBegin));
+            if (i == 0 && result < 0)
+            {
+                std::cerr << "Read error: Color indices must be positive integers.\n";
+                exit(EXIT_FAILURE);
+            }
+
+            if (i != 0 && (result < 0 || result > 255))
+            {
+                std::cerr << "Read error: (R, G, B) components must be integers between 0 and 255.\n";
+                exit(EXIT_FAILURE);
+            }
+
+            colorValues[i] = result;
+            i += 1;
+
+            if (tokenEnd == lineLength)
+            {
+                iterator = line.end();
+            }
+            else
+            {
+                iterator += (tokenEnd - tokenBegin + 1);
+            }
+        }
+
+        int color = 1000000 * colorValues[1] + 1000 * colorValues[2] + colorValues[3]; /* Hash color value. */
+        settings.mapPixelValue[color] = colorValues[0];
+    }
+
+    return settings;
+}
+
+Graph FileIO::readBMP(const std::string& filename, const Settings& settings)
+{
+    std::ifstream file(filename, std::ios::in);
+    if (!file.good()) {
+        std::cerr << "Read error: Could not open file " << filename << "." << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    std::string line;
+
+    /* Get next line after empty lines and comments. */
+    while (std::getline(file, line))
+    {
+        if (line.size() > 0)
+        {
+            if (line[0] != '#')
+            {
+                break;
+            }
+        }
+    }
+
+    if (line.compare("P3") != 0)
+    {
+        std::cerr << "Read error: P3 PPM format is the only supported format.\n";
+        exit(EXIT_FAILURE);
+    }
+
+    /* Get next line after empty lines and comments. */
+    while (std::getline(file, line))
+    {
+        if (line.size() > 0)
+        {
+            if (line[0] != '#')
+            {
+                break;
+            }
+        }
+    }
+
+    int spaceIndex = static_cast<int>(line.find_first_of(' ', 0));
+    int width = std::stoi(line.substr(0, spaceIndex));
+    int height = std::stoi(line.substr(spaceIndex + 1LL));
+
+    /* Get next line after empty lines and comments. */
+    while (std::getline(file, line))
+    {
+        if (line.size() > 0)
+        {
+            if (line[0] != '#')
+            {
+                break;
+            }
+        }
+    }
+
+    int colorSpace = std::stoi(line);
+    if (colorSpace != 255)
+    {
+        std::cerr << "Read error: Color space must be 8 bits. Maximum value in PPM must be 255, while " << colorSpace << " was specified.\n";
+        exit(EXIT_FAILURE);
+    }
+
+    std::vector<int> verticesColors(static_cast<long long>(width) * static_cast<long long>(height), -1);
+    int vertex = 0;
+
+    while (std::getline(file, line))
+    {
+        if (line.size() == 0)
+        {
+            continue;
+        }
+        else
+        {
+            if (line[0] == '#')
+            {
+                continue;
+            }
+        }
+
+        std::array<unsigned char, 3> colorValues;
+
+        int result = std::stoi(line); /* One int per line. */
+        if (result < 0 || result > 255)
+        {
+            std::cerr << "Read error: (R, G, B) components must be integers between 0 and 255.\n";
             exit(EXIT_FAILURE);
         }
-        int pixelColor = atoi(tokens[1].c_str())*1000000+atoi(tokens[2].c_str())*1000+atoi(tokens[3].c_str()); // Convert (xxx,yyy,zzz) in Int(xxxyyyzzz) 
-        int value = atoi(tokens[0].c_str());
-        // std::cout<<" tady " << tokens[1].c_str() <<" "<<tokens[2].c_str()<< " " <<tokens[3].c_str() << " " << pixelColor <<" " << value<<"\n"; // tmp verif.
-        mapPixelValue[pixelColor] = value;
-        line = readNextLine(file, pos);
-    }
-    struct Settings params;
-    params.scale = scale;
-    params.mapPixelValue = mapPixelValue;
-    if(_verbose){
-        std::cout<<"<FileIO::readSettingFile> Display Settings:\n";
-        printSettings(params);
-    }
-    return params;
-}
 
-void FileIO::printSettings(const Settings& settings)
-{
-    std::cout<<"scale: "<<settings.scale<<"\nPixel to int:\n";
-    for(const auto& elem : settings.mapPixelValue)
+        colorValues[0] = static_cast<unsigned char>(result);
+
+        /* Read next two lines for (R, G, B). */
+        for (int i = 1; i <= 2; ++i)
+        {
+            std::getline(file, line);
+            result = std::stoi(line);
+            if (result < 0 || result > 255)
+            {
+                std::cerr << "Read error: (R, G, B) components must be integers between 0 and 255.\n";
+                exit(EXIT_FAILURE);
+            }
+
+            colorValues[i] = static_cast<unsigned char>(result);
+        }
+
+        int color = 1000000 * colorValues[0] + 1000 * colorValues[1] + colorValues[2]; /* Hash color value. */
+        try
+        {
+            verticesColors[vertex] = settings.mapPixelValue.at(color);
+        }
+        catch (std::out_of_range&)
+        {
+            std::cerr << "Read error: Image file contains color (" << colorValues[0] << ", " << colorValues[1] << ", " << colorValues[2] << "), which is not specified in configuration file.\n";
+            exit(EXIT_FAILURE);
+        }
+        vertex += 1;
+    }
+
+    std::vector<std::vector<int>> adjacencyList(verticesColors.size(), std::vector<int>());
+
+    auto coordinatesToIndex = [&, width](int x, int y) { return y * width + x; };
+
+    /* Corners */
+    adjacencyList[coordinatesToIndex(0, 0)].push_back(coordinatesToIndex(1, 0));
+    adjacencyList[coordinatesToIndex(0, 0)].push_back(coordinatesToIndex(0, 1));
+
+    adjacencyList[coordinatesToIndex(width - 1, 0)].push_back(coordinatesToIndex(width - 2, 0));
+    adjacencyList[coordinatesToIndex(width - 1, 0)].push_back(coordinatesToIndex(width - 1, 1));
+
+    adjacencyList[coordinatesToIndex(width - 1, height - 1)].push_back(coordinatesToIndex(width - 1, height - 2));
+    adjacencyList[coordinatesToIndex(width - 1, height - 1)].push_back(coordinatesToIndex(width - 2, height - 1));
+
+    adjacencyList[coordinatesToIndex(0, height - 1)].push_back(coordinatesToIndex(1, height - 1));
+    adjacencyList[coordinatesToIndex(0, height - 1)].push_back(coordinatesToIndex(0, height - 2));
+
+    /* Top row. */
+    for (int x = 1; x < width - 1; ++x)
     {
-        std::string zeros;
-        for(size_t i=0; i <(9-std::to_string(elem.first).length()); ++i)
-            zeros += "0";
-        std::cout << "  "<< zeros << elem.first << " => " << elem.second<<"\n";
-    }
-}
+        int neighbors[3][2] =
+        {
+            {x + 1, 0}, /* East. */
+            {x, 1},     /* South. */
+            {x - 1, 0}  /* West. */
+        };
 
-Graph FileIO::readBMP(const std::string& filename, const Settings& params)
-{
-    std::string file = readFileContent(filename);
-    size_t pos = -1;
-
-    // Read the first line, should be "P3" for rgb.
-    std::string line = readNextLine(file, pos);
-    if(line.compare("P3") != 1){
-        printf("wrong color code. Should be <P3> on line 1.\n");
-        exit(EXIT_FAILURE);
-    }
-    
-    // Remove comments lines. and get to the image's dimension.
-    line = readNextLine(file, pos);
-    while(line[0] == '#')
-        line = readNextLine(file, pos);
-    
-    // Read the dimension.
-    std::vector<std::string> imgSize = tokenizeString(line, " ");
-    if(imgSize.size() != 2){
-        printf("wrong size. Should be a matrix.\n");
-        exit(EXIT_FAILURE);
-    }
-    int width = atoi(imgSize[0].c_str());
-    int height = atoi(imgSize[1].c_str());
-    
-    // Read the bound over the pixel color. Should be 255.
-    line = readNextLine(file, pos);
-    if( line != "255\n"){
-        printf("wrong color cap. Should be a 255.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    std::vector<int> verticesColors(0);
-    std::vector<std::vector<int>> adjancecyList(0);
-
-    // Read the rest.
-    for(int i = 0; i < height; ++i){
-        for(int j = 0; j<width; ++j){
-            int color = 0;
-            for(int rgb = 0; rgb < 3; ++rgb){
-                line = readNextLine(file, pos);
-                color = color*1000 + atoi(line.c_str());
-            }
-            try
-            {
-                verticesColors.push_back(params.mapPixelValue.at(color));
-            }
-            catch(const std::exception& e)
-            {
-                std::cerr << e.what() << "\nColor " << color << " not found in settings.\n";
-            }
-            
-            std::vector<int> adjListPoint;
-            if(i != 0)
-                adjListPoint.push_back(j + width*(i-1));
-            if(i != height - 1)
-                adjListPoint.push_back(j + width*(i+1));
-            if(j != 0)
-                adjListPoint.push_back(j - 1 + width*i);
-            if(j != width - 1)
-                adjListPoint.push_back(j + 1 + width*i);
-            adjancecyList.push_back(adjListPoint);
+        for (const auto& neighbor : neighbors)
+        {
+            adjacencyList[coordinatesToIndex(x, 0)].push_back(coordinatesToIndex(neighbor[0], neighbor[1]));
         }
     }
-    return Graph(adjancecyList, verticesColors);
+
+    /* Right column. */
+    for (int y = 1; y < height - 1; ++y)
+    {
+        int neighbors[3][2] =
+        {
+            {width - 1, y - 1}, /* North. */
+            {width - 2, y},     /* West. */
+            {width - 1, y + 1}  /* South. */
+        };
+
+        for (const auto& neighbor : neighbors)
+        {
+            adjacencyList[coordinatesToIndex(width - 1, y)].push_back(coordinatesToIndex(neighbor[0], neighbor[1]));
+        }
+    }
+
+    /* Bottom row. */
+    for (int x = 1; x < width - 1; ++x)
+    {
+        int neighbors[3][2] =
+        {
+            {x, height - 2},        /* North. */
+            {x + 1, height - 1},    /* East. */
+            {x - 1, height - 1}     /* West. */
+        };
+
+        for (const auto& neighbor : neighbors)
+        {
+            adjacencyList[coordinatesToIndex(x, height - 1)].push_back(coordinatesToIndex(neighbor[0], neighbor[1]));
+        }
+    }
+
+    /* Left column. */
+    for (int y = 1; y < height - 1; ++y)
+    {
+        int neighbors[3][2] =
+        {
+            {0, y - 1}, /* North. */
+            {1, y},     /* East. */
+            {0, y + 1}  /* South. */
+        };
+
+        for (const auto& neighbor : neighbors)
+        {
+            adjacencyList[coordinatesToIndex(0, y)].push_back(coordinatesToIndex(neighbor[0], neighbor[1]));
+        }
+    }
+
+    /* Interior points. */
+    for (int x = 1; x < width - 1; ++x)
+    {
+        for (int y = 1; y < height - 1; ++y)
+        {
+            int neighbors[4][2] =
+            {
+                /* Sorted by resulting index. */
+                {x, y - 1}, /* North. */
+                {x - 1, y}, /* West. */
+                {x + 1, y}, /* East. */
+                {x, y + 1}  /* South. */
+            };
+
+            for (const auto& neighbor : neighbors)
+            {
+                adjacencyList[coordinatesToIndex(x, y)].push_back(coordinatesToIndex(neighbor[0], neighbor[1]));
+            }
+        }
+    }
+
+    return Graph(adjacencyList, verticesColors);
 }
 
 Graph FileIO::readGraph(const std::string& filename)
@@ -202,4 +406,20 @@ static std::vector<std::string> tokenizeString(const std::string& str, const cha
 	}
 
 	return tokens;
+}
+
+std::ostream& operator<<(std::ostream& out, const Settings& settings)
+{
+    out << "Reduction scale: " << settings.scale << '\n';
+
+    out << "Colors indices:\n";
+    for (const auto& elem : settings.mapPixelValue)
+    {
+        std::string zeros;
+        for (size_t i = 0; i < (9 - std::to_string(elem.first).length()); ++i)
+            zeros += "0";
+        out << '\t' << zeros << elem.first << " => " << elem.second << "\n";
+    }
+
+    return out;
 }

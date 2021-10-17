@@ -7,32 +7,51 @@ void printUsage(std::string name)
     std::cout << "Usage: " << name << " <filename> <settings file if instance is bmp>\n";
 }
 
-int main(int argc, char** argv)
+#include <chrono>
+// Development main
+int main()
 {
-    FileIO fileIO;
-    std::string img = "../data/Img1.ppm";
-    std::string config = "../data/Config1.txt";
+    std::string img = "data/Img1.ppm";
+    std::string config = "data/Config1.txt";
 
-    Settings settings = fileIO.readSettingFile(config, true);
-    Graph g = fileIO.readBMP(img, settings);
-    g.printGraph();
-    int a = 3;
-    std::cout<<a+4;
+    auto begin = std::chrono::steady_clock::now();
+    Settings settings = FileIO::readSettingFile(config);
+    auto end = std::chrono::steady_clock::now();
+    std::cout << "Time reading settings: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000.0 << " ms" << std::endl;
+
+    std::cout << "Instance Settings:\n";
+    std::cout << settings;
+
+    begin = std::chrono::steady_clock::now();
+    Graph graph = FileIO::readBMP(img, settings);
+    end = std::chrono::steady_clock::now();
+    std::cout << "Time reading graph: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000.0 << " ms" << std::endl;
+
+    if (graph.getNbVertices() <= 100)
+    {
+        std::cout << graph;
+    }
+
     return 0;
+}
 
+//int main(int argc, char** argv)
+//{
+//    FileIO fileIO;
+//
 //    if (argc >= 2)
 //    {
 //        std::string mode = argv[1];
-
+//
 //        if (mode == "check")
 //        {
 //            if (argc == 4)
 //            {
-//
+//                // Todo
 //            }
 //            else if (argc == 5)
 //            {
-//
+//                // Todo
 //            }
 //            else
 //            {
@@ -40,8 +59,8 @@ int main(int argc, char** argv)
 //                return -1;
 //            }
 //        }
-
-        fileIO.readGraph(std::string(argv[1]));
+//
+//        fileIO.readGraph(std::string(argv[1]));
 //    }
 //    else if (argc == 3)
 //    {
@@ -52,6 +71,6 @@ int main(int argc, char** argv)
 //    {
 //        printUsage(argv[0]);
 //    }
+//
 //    return 0;
-//    std::cout<<"giga\n";
-}
+//}

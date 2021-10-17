@@ -1,22 +1,27 @@
 #pragma once
 
-#include <string>
-#include <map>
 #include "Graph.hpp"
 
+#include <iostream>
+#include <unordered_map>
+#include <string>
 
-struct Settings{
-    int scale;
-    std::map<int, int> mapPixelValue;
+struct Settings
+{
+    int scale = 1;
+    std::unordered_map<int, int> mapPixelValue; /* Key is rrrgggbbb, value is color index. */
+
+    friend std::ostream& operator<<(std::ostream& out, const Settings& settings);
 };
+
 class FileIO
 {
-    public:
-        FileIO() = default;
+public:
+    FileIO() = delete;
+    ~FileIO() = delete;
         
-        static struct Settings readSettingFile(const std::string& filename, bool _verbose);
-        static void printSettings(const Settings& settings);
-        static Graph readBMP(const std::string& filename, const Settings& params);
-        static Graph readGraph(const std::string& filename);
-        void printGraph(const Settings& settings);
+    static Settings readSettingFile(const std::string& filename);
+
+    static Graph readBMP(const std::string& filename, const Settings& settings);
+    static Graph readGraph(const std::string& filename);
 };
