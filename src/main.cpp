@@ -1,8 +1,10 @@
 #include <iostream>
 
+#include "Algorithm.hpp"
 #include "Checker.hpp"
 #include "FileIO.hpp"
 #include "Graph.hpp"
+#include "MIP.hpp"
 
 void printUsage(std::string name)
 {
@@ -58,9 +60,13 @@ int main()
         std::cout << solution;
 
         Checker checker;
-        bool isValid = checker.checkSolution(graph, solution, 1);
+        bool isValid = checker.checkSolution(graph, solution, 2);
 
         std::cout << "Is solution valid for instance: " << isValid << std::endl;
+
+        Algorithm* algorithm = new AlgorithmMIP();
+        algorithm->solveMinCenters(graph, 2);
+        algorithm->solveMinRadius(graph, 2);
     }
 
     return 0;
