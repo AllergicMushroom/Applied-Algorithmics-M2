@@ -3,25 +3,22 @@
 #include <iostream>
 #include <limits>
 
-bool Checker::checkSolution(const Graph& graph, const std::vector<bool>& solution, int maxDistance)
+bool Checker::checkSolution(const Graph& graph, const Solution& solution, int maxDistance)
 {
     for (int i = 0; i < graph.getNbVertices(); ++i)
     {
         int minDist = std::numeric_limits<int>::infinity();
 
-        for (bool centre : solution)
+        for (int center : solution.centers)
         {
-            if (centre)
+            int dist = graph.getDistance(i, center);
+            if (dist < minDist)
             {
-                int dist = graph.getDistance(i, centre);
-                if (dist < minDist)
-                {
-                    minDist = dist;
-                }
+            minDist = dist;
             }
         }
 
-        if (minDist < maxDistance)
+        if (minDist > maxDistance)
         {
             std::cerr << "Vertex " << i << " doesn't have a vaccination centre near enough.\n";
             return false;
