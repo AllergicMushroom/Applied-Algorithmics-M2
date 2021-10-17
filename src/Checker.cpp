@@ -3,7 +3,7 @@
 #include <iostream>
 #include <limits>
 
-bool Checker::checkSolution(const Graph& graph, const Solution& solution, int maxDistance)
+bool Checker::checkSolutionMinCenters(const Graph& graph, const Solution& solution, int radius)
 {
     for (int i = 0; i < graph.getNbVertices(); ++i)
     {
@@ -18,7 +18,7 @@ bool Checker::checkSolution(const Graph& graph, const Solution& solution, int ma
             }
         }
 
-        if (minDist > maxDistance)
+        if (minDist > radius)
         {
             std::cerr << "Vertex " << i << " doesn't have a vaccination centre near enough.\n";
             return false;
@@ -26,4 +26,9 @@ bool Checker::checkSolution(const Graph& graph, const Solution& solution, int ma
     }
 
     return true;
+}
+
+bool Checker::checkSolutionMinRadius(const Graph& graph, const Solution& solution, int nbCenters)
+{
+    return solution.centers.size() <= nbCenters;
 }

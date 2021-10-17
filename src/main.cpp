@@ -60,13 +60,19 @@ int main()
         std::cout << solution;
 
         Checker checker;
-        bool isValid = checker.checkSolution(graph, solution, 2);
+        bool isValid = checker.checkSolutionMinCenters(graph, solution, 2);
 
         std::cout << "Is solution valid for instance: " << isValid << std::endl;
 
         Algorithm* algorithm = new AlgorithmMIP();
-        algorithm->solveMinCenters(graph, 2);
-        algorithm->solveMinRadius(graph, 2);
+        Solution s1 = algorithm->solveMinCenters(graph, 2);
+
+        isValid = checker.checkSolutionMinCenters(graph, s1, 2);
+        std::cout << "Is solution valid for instance: " << isValid << std::endl;
+
+        Solution s2 = algorithm->solveMinRadius(graph, 2);
+        isValid = checker.checkSolutionMinRadius(graph, s2, 2);
+        std::cout << "Is solution valid for instance: " << isValid << std::endl;
     }
 
     return 0;

@@ -9,5 +9,6 @@ public:
     Checker() = default;
     ~Checker() = default;
 
-    bool checkSolution(const Graph& graph, const Solution& solution, int distance);
+    bool checkSolutionMinCenters(const Graph& graph, const Solution& solution, int radius);
+    bool checkSolutionMinRadius(const Graph& graph, const Solution& solution, int nbCenters);
 };
