@@ -1,6 +1,8 @@
 #include <iostream>
 
+#include "Checker.hpp"
 #include "FileIO.hpp"
+#include "Graph.hpp"
 
 void printUsage(std::string name)
 {
@@ -17,7 +19,7 @@ int main()
         std::string config = "data/Config1.txt";
 
         auto begin = std::chrono::steady_clock::now();
-        Settings settings = FileIO::readSettingFile(config);
+        Settings settings = FileIO::readSettings(config);
         auto end = std::chrono::steady_clock::now();
         std::cout << "Time reading settings: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000.0 << " ms" << std::endl;
 
@@ -37,13 +39,28 @@ int main()
     else
     {
         std::string filename = "data/graph1.txt";
+
         auto begin = std::chrono::steady_clock::now();
         Graph graph = FileIO::readGraph(filename);
         auto end = std::chrono::steady_clock::now();
 
         std::cout << "Time reading graph: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000.0 << " ms" << std::endl;
-
+        std::cout << "Instance graph:\n";
         std::cout << graph;
+
+        filename = "data/graph1sol.txt";
+        begin = std::chrono::steady_clock::now();
+        Solution solution = FileIO::readGraphSolution(filename);
+        end = std::chrono::steady_clock::now();
+
+        std::cout << "Time reading solution: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000.0 << " ms" << std::endl;
+        std::cout << "Loaded solution: ";
+        std::cout << solution;
+
+        Checker checker;
+        bool isValid = checker.checkSolution(graph, solution, 1);
+
+        std::cout << "Is solution valid for instance: " << isValid << std::endl;
     }
 
     return 0;
