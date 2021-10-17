@@ -6,5 +6,9 @@
 class Algorithm
 {
 public:
-    virtual Solution solve(const Graph& graph) = 0;
+    Algorithm() = default;
+    virtual ~Algorithm() = default;
+    
+    virtual Solution solveMinCenters(const Graph& graph, int radius) = 0;
+    virtual Solution solveMinRadius(const Graph& graph, int nbCenters) = 0;
 };
