@@ -4,6 +4,7 @@
 #include "Checker.hpp"
 #include "FileIO.hpp"
 #include "Graph.hpp"
+#include "BruteForce.hpp"
 #include "MIP.hpp"
 
 void printUsage(std::string name)
@@ -73,6 +74,11 @@ int main()
         Solution s2 = algorithm->solveMinRadius(graph, 2);
         isValid = checker.checkSolutionMinRadius(graph, s2, 2);
         std::cout << "Is solution valid for instance: " << isValid << std::endl;
+
+        Algorithm* BF = new BruteForce();
+        Solution s3 = BF->solveMinCenters(graph, 2);
+        isValid = checker.checkSolutionMinRadius(graph, s2, 2);
+        std::cout <<s3<< "Is solution valid for instance: " << isValid << std::endl;
     }
 
     return 0;
