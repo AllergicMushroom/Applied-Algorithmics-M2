@@ -5,6 +5,7 @@
 #include "FileIO.hpp"
 #include "Graph.hpp"
 #include "BruteForce.hpp"
+#include "MIP2.hpp"
 #include "MIP.hpp"
 
 void printUsage(std::string name)
@@ -79,6 +80,13 @@ int main()
         Solution s3 = BF->solveMinCenters(graph, 2);
         isValid = checker.checkSolutionMinRadius(graph, s2, 2);
         std::cout <<s3<< "Is solution valid for instance: " << isValid << std::endl;
+
+        Algorithm* mip2 = new MIP2();
+        Solution s4 = mip2->solveMinCenters(graph, 2);
+
+        isValid = checker.checkSolutionMinCenters(graph, s4, 2);
+        std::cout << s4 << "is a valid solution for instance: " << isValid << std::endl;
+
     }
 
     return 0;
