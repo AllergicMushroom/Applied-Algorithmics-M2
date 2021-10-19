@@ -1,13 +1,12 @@
 #include "Checker.hpp"
 
 #include <iostream>
-#include <limits>
 
 bool Checker::checkSolutionMinCenters(const Graph& graph, const Solution& solution, int radius)
 {
     for (int i = 0; i < graph.getNbVertices(); ++i)
     {
-        int minDist = std::numeric_limits<int>::max();
+        int minDist = graph.getDistance(i, solution.centers.at(0));;
 
         for (int center : solution.centers)
         {
