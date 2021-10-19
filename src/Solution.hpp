@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 
+// Do we really want to end line after display ? Should we add brackets ?
 struct Solution
 {
     bool isValid = false;
