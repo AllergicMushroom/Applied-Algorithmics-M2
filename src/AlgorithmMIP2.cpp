@@ -5,17 +5,18 @@
 #include "gurobi_c++.h"
 
 Solution AlgorithmMIP2::solveMinCenters(const Graph& graph, int radius) {
-    std::vector<std::vector<bool>*>* isDistLessThanRadius = new std::vector<std::vector<bool>*>(graph.getNbVertices());
+    std::vector<std::vector<bool>> isDistLessThanRadius = std::vector<std::vector<bool>>(graph.getNbVertices());
     for (size_t i = 0; i < graph.getNbVertices(); i++)
-        isDistLessThanRadius->at(i) = new std::vector<bool>(graph.getNbVertices(), true);
+    {
+        isDistLessThanRadius.at(i) = std::vector<bool>(graph.getNbVertices(), true);
+    }
     for (size_t i = 0; i < graph.getNbVertices(); i++)
     {
         for (size_t j = i+1; j < graph.getNbVertices(); j++){
-            isDistLessThanRadius->at(i)->at(j) = (graph.getDistance(i,j) <= radius);
-            isDistLessThanRadius->at(j)->at(i) = (graph.getDistance(i,j) <= radius);
+            isDistLessThanRadius.at(i).at(j) = (graph.getDistance(i,j) <= radius);
+            isDistLessThanRadius.at(j).at(i) = (graph.getDistance(i,j) <= radius);
         }
     }
-    std::cout<<"isDistLessThanArray generated.\n";
     Solution solution = Solution();
 
      GRBVar* x;
@@ -67,7 +68,7 @@ Solution AlgorithmMIP2::solveMinCenters(const Graph& graph, int radius) {
             GRBLinExpr lhs = 0;
             for (int center = 0; center < graph.getNbVertices(); ++center)
             {
-                    lhs += x[center]*isDistLessThanRadius->at(center)->at(vertex);
+                    lhs += x[center]*isDistLessThanRadius.at(center).at(vertex);
             }
             model.addConstr(lhs >= 1);
         }

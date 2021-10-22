@@ -21,7 +21,7 @@ bool CheckSolution(const Graph& graph, const std::vector<int>& solution, int rad
 
 
 Solution AlgorithmBruteForce::solveMinCenters(const Graph& graph, int radius) {
-    Solution *solution = new Solution();
+    Solution solution = Solution();
 
     for (int nbCenters = 1; nbCenters < graph.getNbVertices(); ++nbCenters) {
         std::vector<int> sol = std::vector<int>(nbCenters, 0);
@@ -44,8 +44,8 @@ Solution AlgorithmBruteForce::solveMinCenters(const Graph& graph, int radius) {
 
         }
         if(CheckSolution(graph, sol, radius)){
-            solution->centers = sol;
-            return *solution;
+            solution.centers = sol;
+            return solution;
         }
     }
 }
