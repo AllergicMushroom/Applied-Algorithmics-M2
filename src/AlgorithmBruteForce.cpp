@@ -1,4 +1,4 @@
-#include "BruteForce.hpp"
+#include "AlgorithmBruteForce.hpp"
 
 bool CheckSolution(const Graph& graph, const std::vector<int>& solution, int radius){
     for (int i = 0; i < graph.getNbVertices(); ++i)
@@ -20,7 +20,7 @@ bool CheckSolution(const Graph& graph, const std::vector<int>& solution, int rad
 }
 
 
-Solution BruteForce::solveMinCenters(const Graph& graph, int radius) {
+Solution AlgorithmBruteForce::solveMinCenters(const Graph& graph, int radius) {
     Solution *solution = new Solution();
 
     for (int nbCenters = 1; nbCenters < graph.getNbVertices(); ++nbCenters) {
@@ -50,6 +50,6 @@ Solution BruteForce::solveMinCenters(const Graph& graph, int radius) {
     }
 }
 
-Solution BruteForce::solveMinRadius(const Graph& graph, int nbCenters){
+Solution AlgorithmBruteForce::solveMinRadius(const Graph& graph, int nbCenters){
     return Solution();
 }

@@ -1,6 +1,6 @@
-#include "DynamicProgramming.hpp"
+#include "AlgorithmDynamicProgramming.hpp"
 
-std::vector<int> DynamicProgramming::greedyIndependentSet(const Graph &graph)
+std::vector<int> AlgorithmDynamicProgramming::greedyIndependentSet(const Graph &graph)
 {
     std::vector<int> solution;
     std::vector<bool> markedVertices(graph.getNbVertices(), false);
@@ -21,7 +21,7 @@ std::vector<int> DynamicProgramming::greedyIndependentSet(const Graph &graph)
     return solution;
 }
 
-std::vector<std::vector<int>> DynamicProgramming::transformToUnitGraph(const Graph &graph, int radius)
+std::vector<std::vector<int>> AlgorithmDynamicProgramming::transformToUnitGraph(const Graph &graph, int radius)
 {
     std::vector<std::vector<int>> adjacencyList(graph.getNbVertices(), std::vector<int>());
 
