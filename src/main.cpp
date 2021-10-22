@@ -2,11 +2,12 @@
 
 #include "Algorithm.hpp"
 #include "Checker.hpp"
+#include "AlgorithmDynamicProgramming.hpp"
 #include "FileIO.hpp"
 #include "Graph.hpp"
-#include "BruteForce.hpp"
-#include "MIP2.hpp"
-#include "MIP.hpp"
+#include "AlgorithmBruteForce.hpp"
+#include "AlgorithmMIP2.hpp"
+#include "AlgorithmMIP.hpp"
 
 void printUsage(std::string name)
 {
@@ -42,54 +43,24 @@ int main()
     }
     else
     {
-        std::string filename = "data/graphs/graph14.txt";
+        std::string filename = "data/graphs/graph9.txt";
 
-        auto begin = std::chrono::steady_clock::now();
         Graph graph = FileIO::readGraph(filename);
-        auto end = std::chrono::steady_clock::now();
+        if (graph.getNbVertices() <= 20)
+        {
+            std::cout << "Instance graph:\n";
+            std::cout << graph;
+        }
 
-        std::cout << "Time reading graph: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000.0 << " ms" << std::endl;
-        std::cout << "Instance graph:\n";
-        if (graph.getNbVertices() <= 10)
-        std::cout << graph;
-
-        /*filename = "data/graph1sol.txt";
-        begin = std::chrono::steady_clock::now();
-        Solution solution = FileIO::readGraphSolution(filename);
-        end = std::chrono::steady_clock::now();
-
-        std::cout << "Time reading solution: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000.0 << " ms" << std::endl;
-        std::cout << "Loaded solution: ";
-        std::cout << solution;
-
-        Checker checker;
-        bool isValid = checker.checkSolutionMinCenters(graph, solution, 2);
-
-        std::cout << "Is solution valid for instance: " << isValid << std::endl; */
-
-        /*Algorithm* algorithm = new AlgorithmMIP();
-        Solution s1 = algorithm->solveMinCenters(graph, 5);
-
-        Checker checker;
-        bool isValid = checker.checkSolutionMinCenters(graph, s1, 5);
-        std::cout << "Is solution valid for instance: " << isValid << std::endl;*/
-
-        /*Solution s2 = algorithm->solveMinRadius(graph, 2);
-        isValid = checker.checkSolutionMinRadius(graph, s2, 2);
-        std::cout << "Is solution valid for instance: " << isValid << std::endl;*/
-
-        /*Algorithm* BF = new BruteForce();
-        Solution s3 = BF->solveMinCenters(graph, 2);
-        isValid = checker.checkSolutionMinRadius(graph, s2, 2);
-        std::cout <<s3<< "Is solution valid for instance: " << isValid << std::endl;*/
-
-        Algorithm* mip2 = new MIP2();
+        Algorithm* mip2 = new AlgorithmMIP2();
         Solution s4 = mip2->solveMinCenters(graph, 5);
 
         Checker checker;
         bool isValid = checker.checkSolutionMinCenters(graph, s4, 5);
         std::cout << s4 << "is a valid solution for instance: " << isValid << std::endl;
 
+        Algorithm* dynProg = new AlgorithmDynamicProgramming();
+        //Solution s5 = dynProg->solveMinCenters(graph, 5);
     }
 
     return 0;
