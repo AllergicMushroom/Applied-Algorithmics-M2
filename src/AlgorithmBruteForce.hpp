@@ -4,10 +4,10 @@
 #include "Graph.hpp"
 #include "Solution.hpp"
 
-class MIP2 : public Algorithm
+class AlgorithmBruteForce : public Algorithm
 {
 public:
-    MIP2() = default;
+    AlgorithmBruteForce() = default;
 
     virtual Solution solveMinCenters(const Graph& graph, int radius) override;
     virtual Solution solveMinRadius(const Graph& graph, int nbCenters) override;

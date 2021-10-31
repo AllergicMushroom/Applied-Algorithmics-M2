@@ -1,4 +1,4 @@
-#include "MIP.hpp"
+#include "AlgorithmMIP.hpp"
 
 #include <sstream>
 
@@ -156,8 +156,6 @@ Solution AlgorithmMIP::solveMinCenters(const Graph& graph, int radius)
 
 Solution AlgorithmMIP::solveMinRadius(const Graph& graph, int nbCenters)
 {
-    // Todo: Incorrect model
-
     Solution solution;
 
     GRBVar r;

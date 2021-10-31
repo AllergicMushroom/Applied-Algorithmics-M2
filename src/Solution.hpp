@@ -11,7 +11,7 @@ struct Solution
 
     friend std::ostream& operator<<(std::ostream& out, const Solution& solution)
     {
-        for (int index = 0; index < solution.centers.size() - 1; ++index)
+        for (int index = 0; index < static_cast<int>(solution.centers.size()) - 1; ++index)
         {
             out << solution.centers[index] << ", ";
         }
