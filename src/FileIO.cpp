@@ -6,10 +6,6 @@
 
 static constexpr const char* EOL = "\n";
 
-static std::string readFileContent(const std::string& filepath);
-static std::string readNextLine(const std::string& str, size_t& currentPosition);
-static std::vector<std::string> tokenizeString(const std::string& str, const char* token);
-
 Settings FileIO::readSettings(const std::string& filename)
 {
     std::ifstream file(filename, std::ios::in);
