@@ -52,6 +52,7 @@ Solution AlgorithmBruteForce::solveMinCenters(const Graph& graph, int radius)
 
         if(checkSolution(graph, sol, radius))
         {
+            solution.isValid = true;
             solution.centers = sol;
             return solution;
         }
