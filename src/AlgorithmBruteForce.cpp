@@ -1,6 +1,7 @@
 #include "AlgorithmBruteForce.hpp"
 
-bool CheckSolution(const Graph& graph, const std::vector<int>& solution, int radius){
+bool AlgorithmBruteForce::checkSolution(const Graph& graph, const std::vector<int>& solution, int radius)
+{
     for (int i = 0; i < graph.getNbVertices(); ++i)
     {
         int minDist = graph.getDistance(i, solution.at(0));
@@ -20,36 +21,45 @@ bool CheckSolution(const Graph& graph, const std::vector<int>& solution, int rad
 }
 
 
-Solution AlgorithmBruteForce::solveMinCenters(const Graph& graph, int radius) {
+Solution AlgorithmBruteForce::solveMinCenters(const Graph& graph, int radius)
+{
     Solution solution = Solution();
 
-    for (int nbCenters = 1; nbCenters < graph.getNbVertices(); ++nbCenters) {
+    for (int nbCenters = 1; nbCenters < graph.getNbVertices(); ++nbCenters)
+    {
         std::vector<int> sol = std::vector<int>(nbCenters, 0);
 
-        bool AllTested = false;
-        while (!CheckSolution(graph, sol, radius) && !AllTested) {
+        bool allTested = false;
+        while (!checkSolution(graph, sol, radius) && !allTested)
+        {
             sol.at(0)++;
 
-
             int index = 0;
-            while (sol.at(index) >= graph.getNbVertices()) {
+            while (sol.at(index) >= graph.getNbVertices())
+            {
                 sol.at(index) = 0;
-                if (index < nbCenters-1) {
+                if (index < nbCenters-1)
+                {
                     index++;
                     sol.at(index)++;
-                }else{
-                    AllTested = true;
+                }
+                else
+                {
+                    allTested = true;
                 }
             }
-
         }
-        if(CheckSolution(graph, sol, radius)){
+
+        if(checkSolution(graph, sol, radius))
+        {
             solution.centers = sol;
             return solution;
         }
     }
 }
 
-Solution AlgorithmBruteForce::solveMinRadius(const Graph& graph, int nbCenters){
+Solution AlgorithmBruteForce::solveMinRadius(const Graph& graph, int nbCenters)
+{
+    // Todo
     return Solution();
 }

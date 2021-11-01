@@ -4,24 +4,27 @@
 
 #include "gurobi_c++.h"
 
-Solution AlgorithmMIP2::solveMinCenters(const Graph& graph, int radius) {
+Solution AlgorithmMIP2::solveMinCenters(const Graph& graph, int radius)
+{
     std::vector<std::vector<bool>> isDistLessThanRadius = std::vector<std::vector<bool>>(graph.getNbVertices());
-    for (size_t i = 0; i < graph.getNbVertices(); i++)
+    for (int i = 0; i < graph.getNbVertices(); i++)
     {
         isDistLessThanRadius.at(i) = std::vector<bool>(graph.getNbVertices(), true);
     }
-    for (size_t i = 0; i < graph.getNbVertices(); i++)
+
+    for (int i = 0; i < graph.getNbVertices(); i++)
     {
-        for (size_t j = i+1; j < graph.getNbVertices(); j++){
+        for (int j = i+1; j < graph.getNbVertices(); j++)
+        {
             isDistLessThanRadius.at(i).at(j) = (graph.getDistance(i,j) <= radius);
             isDistLessThanRadius.at(j).at(i) = (graph.getDistance(i,j) <= radius);
         }
     }
+
     Solution solution = Solution();
 
-     GRBVar* x;
-    GRBVar** c;
-
+    GRBVar* x;
+    
     try
     {
         std::cout << "Creating the Gurobi environment... ";

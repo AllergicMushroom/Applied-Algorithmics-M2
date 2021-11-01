@@ -118,7 +118,7 @@ Solution AlgorithmMIP::solveMinCenters(const Graph& graph, int radius)
 
             for (int vertex = 0; vertex < graph.getNbVertices(); ++vertex)
             {
-                if (x[vertex].get(GRB_DoubleAttr_X) > 0.0)
+                if (x[vertex].get(GRB_DoubleAttr_X) > 0.0001)
                 {
                     std::cout << "x[" << vertex << "]: " << x[vertex].get(GRB_DoubleAttr_X) << '\n';
                     solution.centers.push_back(vertex);
@@ -129,7 +129,7 @@ Solution AlgorithmMIP::solveMinCenters(const Graph& graph, int radius)
             {
                 for (int vertex2 = 0; vertex2 < graph.getNbVertices(); ++vertex2)
                 {
-                    if (c[vertex1][vertex2].get(GRB_DoubleAttr_X) > 0.0)
+                    if (c[vertex1][vertex2].get(GRB_DoubleAttr_X) > 0.0001)
                     {
                         std::cout << "c[" << vertex1 << "][" << vertex2 << "]: " << c[vertex1][vertex2].get(GRB_DoubleAttr_X) << '\n';
                     }

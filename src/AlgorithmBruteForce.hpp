@@ -11,4 +11,7 @@ public:
 
     virtual Solution solveMinCenters(const Graph& graph, int radius) override;
     virtual Solution solveMinRadius(const Graph& graph, int nbCenters) override;
+
+private:
+    bool checkSolution(const Graph& graph, const std::vector<int>& solution, int radius);
 };
