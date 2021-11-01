@@ -224,5 +224,5 @@ Graph AlgorithmDynamicProgramming::transformToUnitGraph(const Graph &graph, int 
         }
     }
 
-    return Graph(adjacencyList, std::vector<int>(adjacencyList.size(), 1));
+    return Graph(adjacencyList);
 }
