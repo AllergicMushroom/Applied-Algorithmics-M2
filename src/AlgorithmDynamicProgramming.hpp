@@ -2,6 +2,8 @@
 #include "Graph.hpp"
 #include "Solution.hpp"
 
+#include <set>
+
 class AlgorithmDynamicProgramming : public Algorithm
 {
 public:
@@ -12,7 +14,7 @@ public:
     virtual Solution solveMinRadius(const Graph& graph, int nbCenters) override;
 
 private:
-    std::vector<int> greedyIndependentSet(const Graph& graph);
+    std::set<int> greedyIndependentSet(const Graph& graph);
 
-    std::vector<std::vector<int>> transformToUnitGraph(const Graph& graph, int radius);
+    Graph transformToUnitGraph(const Graph& graph, int radius);
 };
