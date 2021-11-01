@@ -1,13 +1,22 @@
 #include "Graph.hpp"
 
+#include <chrono>
 #include <iostream>
 
 Graph::Graph(const std::vector<std::vector<int>>& adjacencyList, const std::vector<int>& verticesColors) :
-    mAdjacencyList(adjacencyList),
-    mVerticesColors(verticesColors)
+    mAdjacencyList(adjacencyList)
 {
     clearConnectedComponents();
-    computeDistances();
+
+    if (verticesColors.size() == adjacencyList.size())
+    {
+        mVerticesColors = verticesColors;
+        computeDistances();
+    }
+    else
+    {
+        mVerticesColors = std::vector<int>(adjacencyList.size(), 0);
+    }
 }
 
 void Graph::clearConnectedComponents()
@@ -17,6 +26,7 @@ void Graph::clearConnectedComponents()
 
 void Graph::computeDistances()
 {
+    auto begin = std::chrono::steady_clock::now();
     /* Floyd-Warshall algorithm */
     mDistances = std::vector<std::vector<int>>(mAdjacencyList.size(), std::vector<int>(mAdjacencyList.size(), std::numeric_limits<short int>::max()));
 
@@ -44,6 +54,8 @@ void Graph::computeDistances()
             }
         }
     }
+    auto end = std::chrono::steady_clock::now();
+    std::cout << "Time used by Floyd-Warshall: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000.0 << " ms" << std::endl;
 }
 
 std::ostream& operator<<(std::ostream& out, const Graph& graph)

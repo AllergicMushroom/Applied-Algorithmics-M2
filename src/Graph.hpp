@@ -7,7 +7,7 @@ class Graph
 {
 public:
     Graph() = delete;
-    Graph(const std::vector<std::vector<int>>& adjacencyList, const std::vector<int>& verticesColors);
+    Graph(const std::vector<std::vector<int>>& adjacencyList, const std::vector<int>& verticesColors = std::vector<int>());
 
     ~Graph() = default;
 
