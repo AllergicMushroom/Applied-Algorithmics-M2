@@ -1,5 +1,7 @@
 #include "AlgorithmBranchAndBound.hpp"
 
+#include <chrono>
+
 Solution AlgorithmBranchAndBound::solveMinCenters(const Graph& graph, int radius)
 {
     Graph unweightedGraph = transformToUnitGraph(graph, radius);
@@ -59,10 +61,30 @@ Solution AlgorithmBranchAndBound::branchAndBound(const Graph& graph, std::vector
     }
     else
     {
-        int minDegVertex = 0;
+        std::vector<int> nonDominatedVertices;
+        std::vector<bool> markedVertices(graph.getNbVertices(), false);
+        for (int vertex : partialSolution)
+        {
+            markedVertices[vertex] = true;
+
+            for (int neighbor : graph.getNeighbors(vertex))
+            {
+                markedVertices[neighbor] = true;
+            }
+        }
+
+        for (int vertex = 0; vertex < markedVertices.size(); ++vertex)
+        {
+            if (markedVertices[vertex] == false)
+            {
+                nonDominatedVertices.push_back(vertex);
+            }
+        }
+
+        int minDegVertex = nonDominatedVertices[0];
         int minDeg = graph.getNeighbors(minDegVertex).size();
 
-        for (int vertex = 1; vertex < graph.getNbVertices(); ++vertex)
+        for (int vertex : nonDominatedVertices)
         {
             int vertexDeg = graph.getNeighbors(vertex).size();
             if (vertexDeg < minDeg)
