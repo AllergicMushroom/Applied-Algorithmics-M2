@@ -5,7 +5,9 @@
 #include <algorithm>
 #include <chrono>
 #include <functional>
+#include <unordered_set>
 
+// Todo: We can probably get better performance if we consider I and J as sorted sets.
 Solution AlgorithmDynamicProgramming::solveMinCenters(const Graph& graph, int radius)
 {
     Solution solution;
@@ -33,8 +35,7 @@ Solution AlgorithmDynamicProgramming::solveMinCenters(const Graph& graph, int ra
 
     double z = 0.2271 * unweightedGraph.getNbVertices();
 
-    //if (ISet.size() >= z)
-    if (true)
+    if (ISet.size() >= z)
     {
         struct D
         {
@@ -57,6 +58,11 @@ Solution AlgorithmDynamicProgramming::solveMinCenters(const Graph& graph, int ra
 
         const std::function<D(int, int)> dynamicProgram = [&](int X, int l)
         {
+            if (Dxl[X][l].X != -1)
+            {
+                return Dxl[X][l];
+            }
+
             D d;
             d.X = X;
             d.l = l;
@@ -67,6 +73,7 @@ Solution AlgorithmDynamicProgramming::solveMinCenters(const Graph& graph, int ra
                 d.opt = 0; /* Empty set is dominated by empty set. */
                 d.optSize = 0;
 
+                Dxl[X][l] = d;
                 return d;
             }
 
@@ -87,6 +94,7 @@ Solution AlgorithmDynamicProgramming::solveMinCenters(const Graph& graph, int ra
                             d.opt = -1;
                             d.optSize = -1;
 
+                            Dxl[X][l] = d;
                             return d;
                         }
                     }
@@ -98,6 +106,7 @@ Solution AlgorithmDynamicProgramming::solveMinCenters(const Graph& graph, int ra
                 d.opt = 1; /* 0-th vertex of I.*/
                 d.optSize = 1;
 
+                Dxl[X][l] = d;
                 return d;
             }
 
@@ -120,8 +129,11 @@ Solution AlgorithmDynamicProgramming::solveMinCenters(const Graph& graph, int ra
             }
 
             D d2 = dynamicProgram(newX, l - 1);
-            d2.opt += (1 << (l - 1));
-            d2.optSize += 1;
+            if (d2.opt != -1)
+            {
+                d2.opt += (1 << (l - 1));
+                d2.optSize += 1;
+            }
 
             /* None of the subcalls is valid. */
             if (d1.opt == -1 && d2.opt == -1)
@@ -156,10 +168,11 @@ Solution AlgorithmDynamicProgramming::solveMinCenters(const Graph& graph, int ra
                 }
             }
 
+            Dxl[X][l] = d;
             return d;
         };
 
-        auto begin = std::chrono::steady_clock::now();
+        /* First step. */
         ///* Bit representation of X. */
         for (int subset = 0; subset < std::pow(2, JSet.size()); ++subset)
         {
@@ -169,8 +182,111 @@ Solution AlgorithmDynamicProgramming::solveMinCenters(const Graph& graph, int ra
             }
         }
         
-        auto end = std::chrono::steady_clock::now();
-        std::cout << "Time for opts: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000.0 << " ms" << std::endl;
+        /* Second step. */
+        const std::function<std::vector<int>(int)> minimumDScontainingX = [&](int X)
+        {
+            std::vector<int> DJ;
+
+            std::vector<bool> IDominatedVertices(ISet.size(), false);
+
+            int XIndex = 0;
+            int XVertices = X;
+            while (XVertices != 0)
+            {
+                if (XVertices & 1)
+                {
+                    DJ.push_back(JSet[XIndex]);
+
+                    for (int dominatedVertex : unweightedGraph.getNeighbors(JSet[XIndex]))
+                    {
+                        /* dominatedVertex is in I. */
+                        auto vertexIterator = std::find(ISet.begin(), ISet.end(), dominatedVertex);
+                        if (vertexIterator != ISet.end())
+                        {
+                            int IIndex = vertexIterator - ISet.begin();
+                            IDominatedVertices[IIndex] = true;
+                        }
+                    }
+                }
+
+                XVertices >>= 1;
+                XIndex += 1;
+            }
+
+            int dominatedJ = X;
+
+            std::vector<int> DI1;
+            for (int index = 0; index < IDominatedVertices.size(); ++index)
+            {
+                if (IDominatedVertices[index] == false)
+                {
+                    DI1.push_back(ISet[index]);
+
+                    for (int dominatedVertex : unweightedGraph.getNeighbors(ISet[index]))
+                    {
+                        /* dominatedVertex is in J. */
+                        auto vertexIterator = std::find(JSet.begin(), JSet.end(), dominatedVertex);
+                        if (vertexIterator != JSet.end())
+                        {
+                            int JIndex = vertexIterator - JSet.begin();
+
+                            /* Add vertex at JIndex position to dominatedJ. */
+                            dominatedJ = dominatedJ | (1 << JIndex);
+                        }
+                    }
+                }
+            }
+
+            int undominatedJ = std::pow(2, JSet.size()) - 1 - dominatedJ;
+
+            D d = Dxl[undominatedJ][ISet.size()];
+
+            std::vector<int> DI2;
+
+            int index = 0;
+            int vertices = d.opt;
+            while (vertices != 0)
+            {
+                if (vertices & 1)
+                {
+                    DI2.push_back(ISet[index]);
+                }
+
+                vertices >>= 1;
+                index += 1;
+            }
+
+            std::vector<int> D;
+            D.reserve(DJ.size() + DI1.size() + DI2.size());
+
+            D.insert(D.end(), DJ.begin(), DJ.end());
+            D.insert(D.end(), DI1.begin(), DI1.end());
+            D.insert(D.end(), DI2.begin(), DI2.end());
+
+            /* Remove duplicates. */
+            std::unordered_set<int> s;
+            for (int i : D)
+                s.insert(i);
+            D.assign(s.begin(), s.end());
+
+            return D;
+        };
+
+        std::vector<int> solutionVec = minimumDScontainingX(0);
+
+        for (int subset = 0; subset < std::pow(2, JSet.size()); ++subset)
+        {
+            std::vector<int> newSolutionVec = minimumDScontainingX(subset);
+            if (newSolutionVec.size() < solutionVec.size())
+            {
+                solutionVec = newSolutionVec;
+            }
+        }
+
+        solution.centers = solutionVec;
+        solution.isValid = true;
+
+        return solution;
     }
     else
     {

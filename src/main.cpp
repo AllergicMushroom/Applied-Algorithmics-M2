@@ -45,7 +45,7 @@ int main()
     }
     else
     {
-        std::string filename = "data/graphs/graph3.txt";
+        std::string filename = "data/graphs/graph2.txt";
 
         Graph graph = FileIO::readGraph(filename);
         if (graph.getNbVertices() <= 20)
@@ -60,7 +60,7 @@ int main()
         bool useMIP1 = false;
         bool useMIP2 = true;
         bool useBranchAndBound = false;
-        bool useDynProg = false;
+        bool useDynProg = true;
 
         int radius = 5;
 
@@ -73,9 +73,14 @@ int main()
 
             std::cout << "Time used by Brute Force: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000.0 << " ms" << std::endl;
 
-            std::cout << "Computed solution:\n";
-            std::cout << s;
-            std::cout << "Validity: " << checker.checkSolutionMinCenters(graph, s, radius) << '\n' << std::endl;
+            if (s.isValid)
+            {
+                std::cout << "Solution validity by algorihtm: " << s.isValid << '\n';
+                std::cout << "Solution validity by checker: " << checker.checkSolutionMinCenters(graph, s, radius) << '\n';
+                std::cout << "Computed solution:\n";
+                std::cout << s;
+                std::cout << std::endl;
+            }
         }
 
         if (useMIP1)
@@ -87,9 +92,14 @@ int main()
 
             std::cout << "Time used by MIP1: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000.0 << " ms" << std::endl;
 
-            std::cout << "Computed solution:\n";
-            std::cout << s;
-            std::cout << "Validity: " << checker.checkSolutionMinCenters(graph, s, radius) << '\n' << std::endl;
+            if (s.isValid)
+            {
+                std::cout << "Solution validity by algorihtm: " << s.isValid << '\n';
+                std::cout << "Solution validity by checker: " << checker.checkSolutionMinCenters(graph, s, radius) << '\n';
+                std::cout << "Computed solution:\n";
+                std::cout << s;
+                std::cout << std::endl;
+            }
         }
 
         if (useMIP2)
@@ -101,9 +111,14 @@ int main()
 
             std::cout << "Time used by MIP2: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000.0 << " ms" << std::endl;
 
-            std::cout << "Computed solution:\n";
-            std::cout << s;
-            std::cout << "Validity: " << checker.checkSolutionMinCenters(graph, s, radius) << '\n' << std::endl;
+            if (s.isValid)
+            {
+                std::cout << "Solution validity by algorihtm: " << s.isValid << '\n';
+                std::cout << "Solution validity by checker: " << checker.checkSolutionMinCenters(graph, s, radius) << '\n';
+                std::cout << "Computed solution:\n";
+                std::cout << s;
+                std::cout << std::endl;
+            }
         }
 
         if (useBranchAndBound)
@@ -115,9 +130,14 @@ int main()
 
             std::cout << "Time used by Branch and Bound: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000.0 << " ms" << std::endl;
 
-            std::cout << "Computed solution:\n";
-            std::cout << s;
-            std::cout << "Validity: " << checker.checkSolutionMinCenters(graph, s, radius) << '\n' << std::endl;
+            if (s.isValid)
+            {
+                std::cout << "Solution validity by algorihtm: " << s.isValid << '\n';
+                std::cout << "Solution validity by checker: " << checker.checkSolutionMinCenters(graph, s, radius) << '\n';
+                std::cout << "Computed solution:\n";
+                std::cout << s;
+                std::cout << std::endl;
+            }
         }
 
         if (useDynProg)
@@ -129,9 +149,14 @@ int main()
 
             std::cout << "Time used by Dynamic Program: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000.0 << " ms" << std::endl;
 
-            //std::cout << "Computed solution:\n";
-            //std::cout << s;
-            //std::cout << "Validity: " << checker.checkSolutionMinCenters(graph, s, radius) << '\n' << std::endl;
+            if (s.isValid)
+            {
+                std::cout << "Solution validity by algorihtm: " << s.isValid << '\n';
+                std::cout << "Solution validity by checker: " << checker.checkSolutionMinCenters(graph, s, radius) << '\n';
+                std::cout << "Computed solution:\n";
+                std::cout << s;
+                std::cout << std::endl;
+            }
         }
     }
 
