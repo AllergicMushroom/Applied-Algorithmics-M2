@@ -6,10 +6,11 @@ Solution AlgorithmBranchAndBound::solveMinCenters(const Graph& graph, int radius
 {
     Graph unweightedGraph = transformToUnitGraph(graph, radius);
 
-    int nbCenters = 1;
+    int nbCenters = 0;
     while (true)
     {
-        Solution solution = branchAndBound(unweightedGraph, std::vector<int>(), nbCenters);
+        std::vector<int> partialSolution;
+        Solution solution = branchAndBound(unweightedGraph, partialSolution, nbCenters);
 
         if (solution.isValid)
         {
@@ -94,11 +95,22 @@ Solution AlgorithmBranchAndBound::branchAndBound(const Graph& graph, std::vector
             }
         }
 
+        partialSolution.push_back(minDegVertex);
+        Solution newSolution = branchAndBound(graph, partialSolution, nbCenters - 1);
+        if (newSolution.isValid)
+        {
+            return newSolution;
+        }
+        else
+        {
+            partialSolution.pop_back();
+        }
+
         for (int neighbor : graph.getNeighbors(minDegVertex))
         {
             partialSolution.push_back(neighbor);
 
-            Solution newSolution = branchAndBound(graph, partialSolution, nbCenters - 1);
+            newSolution = branchAndBound(graph, partialSolution, nbCenters - 1);
             if (newSolution.isValid)
             {
                 return newSolution;
