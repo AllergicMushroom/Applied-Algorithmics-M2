@@ -1,8 +1,48 @@
 #include "AlgorithmMIP2.hpp"
 
 #include <sstream>
+#include <iostream>
+#include <fstream>
+#include <algorithm>
 
 #include "gurobi_c++.h"
+
+class saveCallBack: public GRBCallback {
+
+public:
+    GRBVar * _x;
+    int _nbVertices;
+    int _iter=0;
+    /**
+         The constructor is used to get a pointer to the variables that are needed.
+    */
+    saveCallBack(GRBVar * x, int nbVertices):
+            _x(x), _nbVertices(nbVertices){
+    }
+protected:
+    void callback() {
+        try {
+            if (where == GRB_CB_MIPNODE) {
+                std::string results;
+                for (int i = 0; i < _nbVertices; ++i)
+                    results += std::to_string(getNodeRel(_x[i])) + " ";
+
+                std::ofstream myFile;
+                myFile.open("LPSol.txt", std::ios::app);
+                myFile << results<<std::endl;
+                myFile.close();
+                _iter++;
+            }
+        }
+        catch (GRBException e) {
+            std::cout << "Error number: " << e.getErrorCode() << std::endl;
+            std::cout << e.getMessage() << std::endl;
+        }
+       catch (...) {
+            std::cout << "Error during callback" << std::endl;
+        }
+    }
+};
 
 Solution AlgorithmMIP2::solveMinCenters(const Graph& graph, int radius)
 {
@@ -14,13 +54,37 @@ Solution AlgorithmMIP2::solveMinCenters(const Graph& graph, int radius)
 
     for (int i = 0; i < graph.getNbVertices(); i++)
     {
-        for (int j = i+1; j < graph.getNbVertices(); j++)
+        for (int j = i; j < graph.getNbVertices(); j++)
         {
             isDistLessThanRadius.at(i).at(j) = (graph.getDistance(i,j) <= radius);
             isDistLessThanRadius.at(j).at(i) = (graph.getDistance(i,j) <= radius);
         }
     }
+//  If all the vertices dominated by a vertex i are also dominated by a vertex j, then we do not need i.
+    std::vector<int> weakVertices = {};
+    for (int i = 0; i < graph.getNbVertices(); i++)
+    {
+        for (int j = 0; j < graph.getNbVertices(); j++)
+        {
+            if(i != j) {
+                bool isWeak = true;
+                for (int k = 0; k < graph.getNbVertices(); k++) {
+                    if (isDistLessThanRadius.at(i).at(k) < isDistLessThanRadius.at(j).at(k)) {
+//                        std::cout<<i<<" "<<j<<" "<<k<<" "<<isDistLessThanRadius.at(i).at(k) <<" "<< isDistLessThanRadius.at(j).at(k) <<"\n";
+                        isWeak = false;
+                    }
+                }
+                bool IisWeak = false; // We must be carefull not to erase too much variables. (if both 1 and 2 cover 1 and 2, we want to keep one of them.)
+                for(auto v: weakVertices){
+                    if(v == i)
+                        IisWeak = true;
+                }
+                if (isWeak && !IisWeak)
+                    weakVertices.push_back(j);
+            }
+        }
 
+    }
     Solution solution = Solution();
 
     GRBVar* x;
@@ -43,13 +107,23 @@ Solution AlgorithmMIP2::solveMinCenters(const Graph& graph, int radius)
         std::cout << "Creating the variables... ";
 
         x = new GRBVar[graph.getNbVertices()];
+
+        bool newVersion = true;
+
         for (int vertex = 0; vertex < graph.getNbVertices(); ++vertex)
         {
-            std::stringstream ss;
-            ss << "x[" << vertex << "]";
-            x[vertex] = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, ss.str());
+            if(!newVersion || !std::binary_search(weakVertices.begin(), weakVertices.end(), vertex))
+            {
+                std::stringstream ss;
+                ss << "x[" << vertex << "]";
+                x[vertex] = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, ss.str());
+            }
         }
-        
+
+        // --- Adding callback ---
+        std::cout<<"--> Creating the callback"<<std::endl;
+//        saveCallBack * myCallBack = new saveCallBack(x, graph.getNbVertices());
+//        model.setCallback(myCallBack);
         std::cout << "done.\n";
 
         std::cout << "Creating the objective function... ";
@@ -57,7 +131,8 @@ Solution AlgorithmMIP2::solveMinCenters(const Graph& graph, int radius)
         GRBLinExpr obj = 0;
         for (int vertex = 0; vertex < graph.getNbVertices(); ++vertex)
         {
-            obj += x[vertex];
+            if(!newVersion || !std::binary_search(weakVertices.begin(), weakVertices.end(), vertex))
+                obj += x[vertex];
         }
 
         model.setObjective(obj);
@@ -71,6 +146,7 @@ Solution AlgorithmMIP2::solveMinCenters(const Graph& graph, int radius)
             GRBLinExpr lhs = 0;
             for (int center = 0; center < graph.getNbVertices(); ++center)
             {
+                if(!newVersion || !std::binary_search(weakVertices.begin(), weakVertices.end(), center))
                     lhs += x[center]*isDistLessThanRadius.at(center).at(vertex);
             }
             model.addConstr(lhs >= 1);
@@ -103,11 +179,12 @@ Solution AlgorithmMIP2::solveMinCenters(const Graph& graph, int radius)
 
             for (int vertex = 0; vertex < graph.getNbVertices(); ++vertex)
             {
-                if (x[vertex].get(GRB_DoubleAttr_X) > 0.0)
-                {
-                    std::cout << "x[" << vertex << "]: " << x[vertex].get(GRB_DoubleAttr_X) << '\n';
-                    solution.centers.push_back(vertex);
-                }
+                if(!std::binary_search(weakVertices.begin(), weakVertices.end(), vertex))
+                    if (x[vertex].get(GRB_DoubleAttr_X) > 0.0)
+                    {
+                        std::cout << "x[" << vertex << "]: " << x[vertex].get(GRB_DoubleAttr_X) << '\n';
+                        solution.centers.push_back(vertex);
+                    }
             }
         }
         else
