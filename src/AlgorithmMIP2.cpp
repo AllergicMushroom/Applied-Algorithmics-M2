@@ -4,6 +4,9 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <iostream>
+#include <fstream>
+#include <algorithm>
 
 #include "gurobi_c++.h"
 
@@ -57,10 +60,10 @@ Solution AlgorithmMIP2::solveMinCenters(const Graph& graph, int radius)
 
     for (int i = 0; i < graph.getNbVertices(); i++)
     {
-        for (int j = i+1; j < graph.getNbVertices(); j++)
+        for (int j = i; j < graph.getNbVertices(); j++)
         {
-            isDistLessThanRadius.at(i).at(j) = (graph.getDistance(i,j) <= radius);
-            isDistLessThanRadius.at(j).at(i) = (graph.getDistance(i,j) <= radius);
+            isDistLessThanRadius.at(i).at(j) = (graph.getDistance(i, j) <= radius);
+            isDistLessThanRadius.at(j).at(i) = (graph.getDistance(i, j) <= radius);
         }
     }
 
@@ -86,13 +89,18 @@ Solution AlgorithmMIP2::solveMinCenters(const Graph& graph, int radius)
         std::cout << "Creating the variables... ";
 
         x = new GRBVar[graph.getNbVertices()];
+
         for (int vertex = 0; vertex < graph.getNbVertices(); ++vertex)
         {
             std::stringstream ss;
             ss << "x[" << vertex << "]";
             x[vertex] = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, ss.str());
         }
-        
+
+        // --- Adding callback ---
+        std::cout<<"--> Creating the callback"<<std::endl;
+//        saveCallBack * myCallBack = new saveCallBack(x, graph.getNbVertices());
+//        model.setCallback(myCallBack);
         std::cout << "done.\n";
 
         std::cout << "Creating the objective function... ";
@@ -114,7 +122,7 @@ Solution AlgorithmMIP2::solveMinCenters(const Graph& graph, int radius)
             GRBLinExpr lhs = 0;
             for (int center = 0; center < graph.getNbVertices(); ++center)
             {
-                    lhs += x[center]*isDistLessThanRadius.at(center).at(vertex);
+                lhs += x[center] * isDistLessThanRadius[center][vertex];
             }
             model.addConstr(lhs >= 1);
 
@@ -173,8 +181,6 @@ Solution AlgorithmMIP2::solveMinCenters(const Graph& graph, int radius)
 
                 if (neighborhoodSame)
                 {
-                    std::cout << vertex1 << " N is same as " << vertex2 << " N" << std::endl;
-
                     model.addConstr(x[vertex1] + x[vertex2] <= 1);
 
                     GRBLinExpr lhs = 0;
@@ -189,8 +195,6 @@ Solution AlgorithmMIP2::solveMinCenters(const Graph& graph, int radius)
                 }
                 else
                 {
-                    std::cout << vertex1 << " N is included in " << vertex2 << " N" << std::endl;
-
                     model.addConstr(x[vertex1] == 0);
                 }
             }
