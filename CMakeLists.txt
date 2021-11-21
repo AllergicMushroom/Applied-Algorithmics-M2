@@ -15,17 +15,8 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES MSVC)
     add_compile_definitions(PLATFORM_WINDOWS)
     
     set(CMAKE_CXX_FLAGS "/W4 /EHsc")
-    set(CMAKE_CXX_FLAGS_DEBUG "/Zi /Od /MTd")
+    set(CMAKE_CXX_FLAGS_DEBUG "/Zi /Od /MT")
     set(CMAKE_CXX_FLAGS_RELEASE "/O2 /MT")
-endif()
-
-option(ENABLE_DEBUG "Debug option" OFF)
-if (ENABLE_DEBUG)
-    set(CMAKE_BUILD_TYPE DEBUG)
-    add_definitions(-DMODE_DEBUG)
-else()
-    set(CMAKE_BUILD_TYPE RELEASE)
-    add_definitions(-DMODE_RELEASE)
 endif()
 
 if (WIN32)
@@ -34,13 +25,9 @@ if (WIN32)
     set(GUROBI_INCLUDE_DIR "${GUROBI_ROOT}/include")
     message(STATUS "GUROBI_INCLUDE_DIR : ${GUROBI_INCLUDE_DIR}")
 
-    if (ENABLE_DEBUG)
-        set(GUROBI_LIBRARY_CPLUS "${GUROBI_ROOT}/lib/gurobi_c++mt2019.lib")
-    else()
-        set(GUROBI_LIBRARY_CPLUS "${GUROBI_ROOT}/lib/gurobi_c++mtd2019.lib")
-    endif()
-
     set(GUROBI_LIBRARY "${GUROBI_ROOT}/lib/gurobi91.lib")
+    set(GUROBI_LIBRARY_CPLUS "${GUROBI_ROOT}/lib/gurobi_c++mt2019.lib")
+
     set(GUROBI_LIBRARIES ${GUROBI_LIBRARY_CPLUS} ${GUROBI_LIBRARY})
 else ()
     # ATTENTION -> Il faut modifier le chemin GUROBI_ROOT ci-dessous
@@ -50,11 +37,10 @@ else ()
     set(GUROBI_INCLUDE_DIR "${GUROBI_ROOT}/include")
     message(STATUS "GUROBI_INCLUDE_DIR : ${GUROBI_INCLUDE_DIR}") #On affiche le dossier pr�c�dent (pour DEBUG)
 
-    # On cr�� des variables stockant l'emplacement des bibloth�ques/librairies du solveur GUROBI (pour l'�dition des liens)
-    set(GUROBI_LIBRARY_CPLUS "${GUROBI_ROOT}/lib/libgurobi_c++.a")
-    # ATTENTION -> Selon la version utilis�e, il faut modifier le nom de la librairie ci-dessous
     set(GUROBI_LIBRARY "${GUROBI_ROOT}/lib/libgurobi91.so")
-    set(GUROBI_LIBRARIES ${GUROBI_LIBRARY_CPLUS} ${GUROBI_LIBRARY})
+    set(GUROBI_LIBRARY_CPLUS "${GUROBI_ROOT}/lib/libgurobi_c++.a")
+
+    set(GUROBI_LIBRARIES  ${GUROBI_LIBRARY} ${GUROBI_LIBRARY_CPLUS})
 endif()
 message(STATUS "GUROBI_LIBRARIES : ${GUROBI_LIBRARIES}")
 
@@ -74,4 +60,8 @@ add_executable(${APP_NAME} ${COMMON_SOURCES})
 target_link_libraries(${APP_NAME} ${GUROBI_LIBRARIES})
 
 # Data
+# Move data directory to cmake's output directory
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+# Add custom command for smart enough IDEs
 add_custom_command(TARGET ${APP_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/data $<TARGET_FILE_DIR:${APP_NAME}>/data)

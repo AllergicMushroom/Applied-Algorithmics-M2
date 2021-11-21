@@ -1,8 +1,51 @@
 #include "AlgorithmMIP2.hpp"
 
+#include <algorithm>
+#include <fstream>
+#include <iostream>
 #include <sstream>
 
 #include "gurobi_c++.h"
+
+class Callback : public GRBCallback
+{
+public:
+    GRBVar* mX;
+    const Graph& mGraph;
+
+    Callback(GRBVar* x, const Graph& graph) :
+        mX(x),
+        mGraph(graph)
+    {}
+
+protected:
+    void callback() {
+        try {
+            if (where == GRB_CB_MIPNODE) {
+                if (getIntInfo(GRB_CB_MIPNODE_STATUS) == GRB_OPTIMAL)
+                {
+                    std::string results;
+                    for (int i = 0; i < mGraph.getNbVertices(); ++i)
+                    {
+                        results += std::to_string(getNodeRel(mX[i])) + " ";
+                    }
+
+                    std::ofstream myFile;
+                    myFile.open("relsols.txt", std::ios::out | std::ios::app);
+                    myFile << results << std::endl;
+                    myFile.close();
+                }
+            }
+        }
+        catch (GRBException e) {
+            std::cout << "Error number: " << e.getErrorCode() << std::endl;
+            std::cout << e.getMessage() << std::endl;
+        }
+        catch (...) {
+            std::cout << "Error during callback" << std::endl;
+        }
+    }
+};
 
 Solution AlgorithmMIP2::solveMinCenters(const Graph& graph, int radius)
 {
@@ -74,14 +117,96 @@ Solution AlgorithmMIP2::solveMinCenters(const Graph& graph, int radius)
                     lhs += x[center]*isDistLessThanRadius.at(center).at(vertex);
             }
             model.addConstr(lhs >= 1);
+
+            /* Neighboorhood reduction. */
+            lhs = x[vertex];
+            int count = 0;
+            for (int neighbor = 0; neighbor < graph.getNbVertices(); ++neighbor)
+            {
+                if (isDistLessThanRadius[vertex][neighbor])
+                {
+                    lhs += x[neighbor];
+                    count += 1;
+                }
+            }
+            model.addConstr(lhs <= count);
+        }
+
+        /* Eliminate neighborhood variables */
+        for (int vertex2 = 0; vertex2 < graph.getNbVertices(); ++vertex2)
+        {
+            for (int vertex1 = 0; vertex1 < graph.getNbVertices(); ++vertex1)
+            {
+                if (vertex1 == vertex2)
+                {
+                    continue;
+                }
+
+                bool neighborhoodIncluded = true;
+                bool neighborhoodSame = true;
+                for (int neighbor = 0; neighbor < graph.getNbVertices(); ++neighbor)
+                {
+                    if (isDistLessThanRadius[vertex1][neighbor])
+                    {
+                        /* N(vertex1) is not included in N(vertex2). */
+                        if (!isDistLessThanRadius[vertex2][neighbor])
+                        {
+                            neighborhoodIncluded = false;
+                            neighborhoodSame = false;
+                            break;
+                        }
+                    }
+
+                    if (isDistLessThanRadius[vertex2][neighbor])
+                    {
+                        if (!isDistLessThanRadius[vertex1][neighbor])
+                        {
+                            neighborhoodSame = false;
+                        }
+                    }
+                }
+
+                if (!neighborhoodIncluded)
+                {
+                    continue;
+                }
+
+                if (neighborhoodSame)
+                {
+                    std::cout << vertex1 << " N is same as " << vertex2 << " N" << std::endl;
+
+                    model.addConstr(x[vertex1] + x[vertex2] <= 1);
+
+                    GRBLinExpr lhs = 0;
+                    for (int vertex = 0; vertex < graph.getNbVertices(); ++vertex)
+                    {
+                        if (isDistLessThanRadius[vertex1][vertex])
+                        {
+                            lhs += x[vertex];
+                        }
+                    }
+                    model.addConstr(lhs <= 1);
+                }
+                else
+                {
+                    std::cout << vertex1 << " N is included in " << vertex2 << " N" << std::endl;
+
+                    model.addConstr(x[vertex1] == 0);
+                }
+            }
         }
 
         std::cout << "done.\n";
 
+        std::cout << "Creating the callback... ";
+        Callback* callback = new Callback(x, graph);
+        model.setCallback(callback);
+        std::cout << "done.\n";
+
         std::cout << "Configuring solver... ";
 
-        model.set(GRB_DoubleParam_TimeLimit, 600.0);
-        model.set(GRB_IntParam_Threads, 24);
+        model.set(GRB_DoubleParam_TimeLimit, 3600.0);
+        model.set(GRB_IntParam_Threads, 1);
 
         std::cout << "done.\n";
 
