@@ -62,6 +62,8 @@ Solution AlgorithmBranchAndBound::branchAndBound(const Graph& graph, std::vector
     else
     {
         std::vector<int> nonDominatedVertices;
+        nonDominatedVertices.reserve(graph.getNbVertices() / 2);
+
         std::vector<bool> markedVertices(graph.getNbVertices(), false);
         for (int vertex : partialSolution)
         {
@@ -92,6 +94,17 @@ Solution AlgorithmBranchAndBound::branchAndBound(const Graph& graph, std::vector
                 minDegVertex = vertex;
                 minDeg = vertexDeg;
             }
+        }
+
+        partialSolution.push_back(minDegVertex);
+        Solution newSolution = branchAndBound(graph, partialSolution, nbCenters - 1);
+        if (newSolution.isValid)
+        {
+            return newSolution;
+        }
+        else
+        {
+            partialSolution.pop_back();
         }
 
         for (int neighbor : graph.getNeighbors(minDegVertex))
