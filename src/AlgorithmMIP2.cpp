@@ -97,12 +97,6 @@ Solution AlgorithmMIP2::solveMinCenters(const Graph& graph, int radius)
             x[vertex] = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, ss.str());
         }
 
-        // --- Adding callback ---
-        std::cout<<"--> Creating the callback"<<std::endl;
-//        saveCallBack * myCallBack = new saveCallBack(x, graph.getNbVertices());
-//        model.setCallback(myCallBack);
-        std::cout << "done.\n";
-
         std::cout << "Creating the objective function... ";
 
         GRBLinExpr obj = 0;
