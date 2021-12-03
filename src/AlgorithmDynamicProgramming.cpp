@@ -39,8 +39,7 @@ Solution AlgorithmDynamicProgramming::solveMinCenters(const Graph& graph, int ra
 
     double z = 0.2271 * unweightedGraph.getNbVertices();
 
-    // if (ISet.size() >= z)
-    if (true)
+    if (ISet.size() >= z)
     {
         struct D
         {
