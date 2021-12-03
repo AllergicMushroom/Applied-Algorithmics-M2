@@ -1,6 +1,7 @@
 #include "AlgorithmBranchAndBound.hpp"
 
 #include <chrono>
+#include <cmath>
 
 Solution AlgorithmBranchAndBound::solveMinCenters(const Graph& graph, int radius)
 {

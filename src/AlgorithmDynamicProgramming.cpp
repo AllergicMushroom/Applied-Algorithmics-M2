@@ -3,9 +3,13 @@
 #include "AlgorithmBruteForce.hpp"
 
 #include <algorithm>
-#include <chrono>
 #include <functional>
 #include <unordered_set>
+#include <cmath>
+
+// Debug
+#include <bitset>
+#include <chrono>
 
 // Todo: We can probably get better performance if we consider I and J as sorted sets.
 Solution AlgorithmDynamicProgramming::solveMinCenters(const Graph& graph, int radius)
@@ -35,7 +39,8 @@ Solution AlgorithmDynamicProgramming::solveMinCenters(const Graph& graph, int ra
 
     double z = 0.2271 * unweightedGraph.getNbVertices();
 
-    if (ISet.size() >= z)
+    // if (ISet.size() >= z)
+    if (true)
     {
         struct D
         {
@@ -176,7 +181,7 @@ Solution AlgorithmDynamicProgramming::solveMinCenters(const Graph& graph, int ra
         ///* Bit representation of X. */
         for (int subset = 0; subset < std::pow(2, JSet.size()); ++subset)
         {
-            for (int l = 1; l <= ISet.size(); ++l)
+            for (int l = ISet.size() - 2; l <= ISet.size(); ++l)
             {
                 Dxl[subset][l] = dynamicProgram(subset, l);
             }
@@ -189,8 +194,11 @@ Solution AlgorithmDynamicProgramming::solveMinCenters(const Graph& graph, int ra
 
             std::vector<bool> IDominatedVertices(ISet.size(), false);
 
+            int dominatedJ = X;
+
             int XIndex = 0;
             int XVertices = X;
+
             while (XVertices != 0)
             {
                 if (XVertices & 1)
@@ -199,12 +207,21 @@ Solution AlgorithmDynamicProgramming::solveMinCenters(const Graph& graph, int ra
 
                     for (int dominatedVertex : unweightedGraph.getNeighbors(JSet[XIndex]))
                     {
-                        /* dominatedVertex is in I. */
                         auto vertexIterator = std::find(ISet.begin(), ISet.end(), dominatedVertex);
+
+                        /* dominatedVertex is in I. */
                         if (vertexIterator != ISet.end())
                         {
                             int IIndex = vertexIterator - ISet.begin();
                             IDominatedVertices[IIndex] = true;
+                        }
+                        /* dominatedVertex is in J. */
+                        else
+                        {
+                            vertexIterator = std::find(JSet.begin(), JSet.end(), dominatedVertex);
+                            int JIndex = vertexIterator - JSet.begin();
+
+                            dominatedJ = dominatedJ | (1 << JIndex);
                         }
                     }
                 }
@@ -212,8 +229,6 @@ Solution AlgorithmDynamicProgramming::solveMinCenters(const Graph& graph, int ra
                 XVertices >>= 1;
                 XIndex += 1;
             }
-
-            int dominatedJ = X;
 
             std::vector<int> DI1;
             for (int index = 0; index < IDominatedVertices.size(); ++index)
@@ -240,6 +255,7 @@ Solution AlgorithmDynamicProgramming::solveMinCenters(const Graph& graph, int ra
             int undominatedJ = std::pow(2, JSet.size()) - 1 - dominatedJ;
 
             D d = Dxl[undominatedJ][ISet.size()];
+            // D d = dynamicProgram(X, ISet.size());
 
             std::vector<int> DI2;
 
