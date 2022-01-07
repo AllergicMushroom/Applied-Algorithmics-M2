@@ -1,14 +1,16 @@
 #include "ProgressifAlgorithm.hpp"
 
-std::vector<std::vector<bool>> generateProfils(const Graph& graph, int radius, std::vector<int> W){
-    std::vector<std::vector<bool>> profils(graph.getNbVertices());
+std::vector<int> generateProfils(const Graph& graph, int radius, std::vector<int> W){
+    std::vector<int> profils(graph.getNbVertices(),0);
     for (int vertex = 0; vertex < graph.getNbVertices(); vertex++)
     {
-        profils.at(vertex) = std::vector<bool>(W.size(), false);
         for (int uIndex = 0; uIndex < W.size(); uIndex++)
         {
             int u = W.at(uIndex);
-            profils.at(vertex).at(uIndex) = (graph.getDistance(vertex,u) <= radius);
+            if(graph.getDistance(vertex,u) <= radius){
+                int mask = 1 << uIndex;
+                profils.at(vertex) = profils.at(vertex)|mask;
+            }
         }
         
     }
@@ -18,19 +20,18 @@ std::vector<std::vector<bool>> generateProfils(const Graph& graph, int radius, s
 Solution AlgoProgressif(const Graph& graph, int radius, int solCard){
     bool displayProfils = true;
     
-    std::vector<int> W(0);
+    std::vector<int> W(2);
+    W.at(1)=3;
 
-    std::vector<std::vector<bool>> profils = generateProfils(graph, radius, W);
+
+    std::vector<int> profils = generateProfils(graph, radius, W);
 
 
     if(displayProfils){
         std::cout<<"profils:\n";
         for (int vertex = 0; vertex < graph.getNbVertices(); vertex++)
         {
-            for (int vertex2 = 0; vertex2 < W.size(); vertex2++)
-            {
-                std::cout<<profils.at(vertex).at(vertex2)<<" ";
-            }
+            std::cout<<profils.at(vertex)<<" ";
             std::cout<<"\n";
         }
     }
