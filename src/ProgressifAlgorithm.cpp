@@ -1,4 +1,6 @@
 #include "ProgressifAlgorithm.hpp"
+#include <numeric> 
+#include <algorithm>
 
 std::vector<int> generateProfils(const Graph& graph, int radius, std::vector<int> W){
     std::vector<int> profils(graph.getNbVertices(),0);
@@ -23,10 +25,7 @@ Solution AlgoProgressif(const Graph& graph, int radius, int solCard){
     std::vector<int> W(2);
     W.at(1)=3;
 
-
     std::vector<int> profils = generateProfils(graph, radius, W);
-
-
     if(displayProfils){
         std::cout<<"profils:\n";
         for (int vertex = 0; vertex < graph.getNbVertices(); vertex++)
@@ -36,6 +35,19 @@ Solution AlgoProgressif(const Graph& graph, int radius, int solCard){
         }
     }
     
+    std::vector<int> sortedProfilsIndices(graph.getNbVertices());
+    std::iota(std::begin(sortedProfilsIndices), std::end(sortedProfilsIndices), 0);
+    sort(sortedProfilsIndices.begin(), sortedProfilsIndices.end(), [profils](const int lhs, const int rhs){
+        return profils.at(lhs) > profils.at(rhs);
+        }
+    );
+
+    if(displayProfils){
+        for(auto v: sortedProfilsIndices)
+            std::cout<<v<<" ";
+        std::cout<<"\n";
+    }
+
     Solution solution;
     return solution;
 }
