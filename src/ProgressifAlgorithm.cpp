@@ -19,6 +19,33 @@ std::vector<int> generateProfils(const Graph& graph, int radius, std::vector<int
     return profils;
 }
 
+std::vector<int> cleanProfiles(std::vector<int> profils,bool displayProfils=false){
+    std::vector<int> sortedUniqueProfilsIndices(profils.size());
+    std::iota(std::begin(sortedUniqueProfilsIndices), std::end(sortedUniqueProfilsIndices), 0);
+    sort(sortedUniqueProfilsIndices.begin(), sortedUniqueProfilsIndices.end(), [profils](const int lhs, const int rhs){
+        return profils.at(lhs) > profils.at(rhs);
+        }
+    );
+    if(displayProfils){
+    for(auto v: sortedUniqueProfilsIndices)
+        std::cout<<v<<" ";
+    std::cout<<"\n";
+    }
+
+    auto last = std::unique(sortedUniqueProfilsIndices.begin(), sortedUniqueProfilsIndices.end(), [profils](const int lhs, const int rhs){
+        return profils.at(lhs) == profils.at(rhs);
+        });
+    sortedUniqueProfilsIndices.erase(last, sortedUniqueProfilsIndices.end());
+    // TODO find a way to remove included profils elegantly using next line.
+    // (profils.at(lhs)&profils.at(rhs)) == profils.at(rhs);
+    if(displayProfils){
+        for(auto v: sortedUniqueProfilsIndices)
+            std::cout<<v<<" ";
+        std::cout<<"\n";
+    }
+    return sortedUniqueProfilsIndices;
+}
+
 Solution AlgoProgressif(const Graph& graph, int radius, int solCard){
     bool displayProfils = true;
     
@@ -34,20 +61,7 @@ Solution AlgoProgressif(const Graph& graph, int radius, int solCard){
             std::cout<<"\n";
         }
     }
-    
-    std::vector<int> sortedProfilsIndices(graph.getNbVertices());
-    std::iota(std::begin(sortedProfilsIndices), std::end(sortedProfilsIndices), 0);
-    sort(sortedProfilsIndices.begin(), sortedProfilsIndices.end(), [profils](const int lhs, const int rhs){
-        return profils.at(lhs) > profils.at(rhs);
-        }
-    );
-
-    if(displayProfils){
-        for(auto v: sortedProfilsIndices)
-            std::cout<<v<<" ";
-        std::cout<<"\n";
-    }
-
+    std::vector<int> sortedUniqueProfilsIndices = cleanProfiles(profils, displayProfils);
     Solution solution;
     return solution;
 }
