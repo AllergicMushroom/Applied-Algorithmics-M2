@@ -4,10 +4,10 @@
 #include "Graph.hpp"
 #include "Solution.hpp"
 
-class ProgressifAlgorithm : public Algorithm
+class ProgressiveAlgorithm : public Algorithm
 {
 public:
-    ProgressifAlgorithm() = default;
+    ProgressiveAlgorithm() = default;
 
     virtual Solution solveMinCenters(const Graph& graph, int radius) override;
     virtual Solution solveMinRadius(const Graph& graph, int nbCenters) override;

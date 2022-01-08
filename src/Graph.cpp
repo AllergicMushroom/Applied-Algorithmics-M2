@@ -60,7 +60,7 @@ void Graph::computeDistances()
 
 std::ostream& operator<<(std::ostream& out, const Graph& graph)
 {
-    out << "Adjacecy list:\n";
+    out << "Adjacency list:\n";
     for (int i = 0; i < graph.mAdjacencyList.size(); ++i)
     {
         out << i << " -> ";

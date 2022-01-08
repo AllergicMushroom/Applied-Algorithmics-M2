@@ -1,4 +1,4 @@
-#include "ProgressifAlgorithm.hpp"
+#include "ProgressiveAlgorithm.hpp"
 #include "Checker.hpp"
 #include <numeric> 
 #include <algorithm>
@@ -31,10 +31,15 @@ bool checkSol(std::vector<bool> sol, std::vector<int> profils, std::vector<int> 
     return value == (pow(2,sizeW)-1);
 }
 
+// TODO take initial solution as parameter. Since the sol s returned by BruteForceW over W is the first valid one encountered, no solution before s will cover W Union {u}, so we can restart the algo from the previous sol.
+// TODO maybe design a better algorithm, like branch n bound.
 std::vector<bool> BruteForceW(std::vector<int> profils, std::vector<int> usefullIndices, int sizeSol, int sizeW)
 {
     bool debug = false;
+
     if(sizeSol > sizeW) sizeSol = sizeW;
+    if(sizeSol > usefullIndices.size()) sizeSol = usefullIndices.size();
+
     if(debug) std::cout<<"<ProgressiveAlgorithm::BruteForce> Launched with: |W| = " << sizeW<<", |sol| = " << sizeSol<<" |profiles| = " << usefullIndices.size() << ".\n";
     std::vector<bool> sol(usefullIndices.size(), 0);
 
@@ -108,17 +113,13 @@ std::vector<int> cleanProfiles(std::vector<int> profils,bool displayProfils=fals
         std::cout<<"\n";
     }
 
+    // Note that the following removes both the identical profiles, and the included consecutives profiles.
     auto last = std::unique(sortedUniqueProfilsIndices.begin(), sortedUniqueProfilsIndices.end(), [profils](const int lhs, const int rhs){
-        return profils.at(lhs) == profils.at(rhs);
+        return (profils.at(lhs)&profils.at(rhs)) == profils.at(rhs);
         });
     sortedUniqueProfilsIndices.erase(last, sortedUniqueProfilsIndices.end());
     // TODO find a way to remove included profils elegantly using next line.
-    // (profils.at(lhs)&profils.at(rhs)) == profils.at(rhs);
-    if(displayProfils){
-        for(auto v: sortedUniqueProfilsIndices)
-            std::cout<<v<<" ";
-        std::cout<<"\n";
-    }
+// (profils.at(lhs)&profils.at(rhs)) == profils.at(rhs)
     return sortedUniqueProfilsIndices;
 }
 
@@ -142,7 +143,7 @@ int isSolutionNotRealisable(const Graph& graph, int radius, Solution& solution){
     return -1;
 }
 
-Solution AlgoProgressif(const Graph& graph, int radius, int solCard){
+Solution AlgoProgressive(const Graph& graph, int radius, int solCard){
     bool displayProfils = false;
     Checker checker;
     Solution solution;
@@ -188,13 +189,14 @@ Solution AlgoProgressif(const Graph& graph, int radius, int solCard){
     return solution;
 }
 
-Solution ProgressifAlgorithm::solveMinCenters(const Graph& graph, int radius){
+Solution ProgressiveAlgorithm::solveMinCenters(const Graph& graph, int radius){
     int lowerBound = 1;
     int upperBound = graph.getNbVertices();
     Solution bestSol;
     while(lowerBound < upperBound){
         int average = int((upperBound-lowerBound)/2);
-        Solution sol = AlgoProgressif(graph, radius, lowerBound+average);
+        std::cout<<"<ProgressiveAlgorithm::solveMinCenters> Lower Bound = "<<lowerBound<<" Upper Bound = "<<upperBound<<"\n";
+        Solution sol = AlgoProgressive(graph, radius, lowerBound+average);
         if(sol.isValid){
             bestSol = sol;
             upperBound = lowerBound + average;
@@ -211,7 +213,7 @@ Solution ProgressifAlgorithm::solveMinCenters(const Graph& graph, int radius){
 }
 
 
-Solution ProgressifAlgorithm::solveMinRadius(const Graph& graph, int nbCenters){
+Solution ProgressiveAlgorithm::solveMinRadius(const Graph& graph, int nbCenters){
     Solution solution;
     return solution;
 }
