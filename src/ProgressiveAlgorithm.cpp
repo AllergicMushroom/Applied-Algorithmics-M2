@@ -158,6 +158,36 @@ int isSolutionNotRealisable(const Graph& graph, int radius, Solution& solution){
     return -1;
 }
 
+// return -1 if solution is realisable, and return the id of the farest non-covered vertex otherwise.
+int isSolutionNotRealisableFarest(const Graph& graph, int radius, Solution& solution){
+    std::vector<int> distances(graph.getNbVertices());
+    for(int i = 0; i < graph.getNbVertices(); i++)
+    {
+        distances.at(i) = graph.getDistance(i,solution.centers.at(0));
+        for (int j = 0; j < solution.centers.size(); j++)
+        {
+            if(graph.getDistance(i,solution.centers.at(j)) < distances.at(i))
+                distances.at(i) = graph.getDistance(i,solution.centers.at(j));
+            if(graph.getDistance(i,solution.centers.at(j)) <= radius){
+                break;
+            }
+        }
+    }
+    int maxDist = distances.at(0);
+    int index = 0;
+    for(int i = 1; i < graph.getNbVertices(); i++){
+        if(maxDist < distances.at(i) ){
+            maxDist = distances.at(i);
+            index = i;
+        }
+    }
+    if(maxDist > radius)
+        return index;
+    solution.isValid = true;
+    return -1;
+}
+
+
 Solution AlgoProgressive(const Graph& graph, int radius, int solCard){
     bool displayProfils = false;
     Checker checker;
@@ -168,7 +198,6 @@ Solution AlgoProgressive(const Graph& graph, int radius, int solCard){
     std::vector<unsigned long> profils = generateProfils(graph, radius, W);
     while(W.size() <= graph.getNbVertices())
     {
-        std::cout<<"W size: "<<W.size()<<"\n";
         if(displayProfils){
             std::cout<<"profils:\n";
             for (int vertex = 0; vertex < graph.getNbVertices(); vertex++)
@@ -177,7 +206,6 @@ Solution AlgoProgressive(const Graph& graph, int radius, int solCard){
                 std::cout<<"\n";
             }
         }
-
         std::vector<int> sortedUniqueProfilsIndices = cleanProfiles(profils, displayProfils);
         std::vector<bool> tmp = BruteForceW(profils, sortedUniqueProfilsIndices, solCard, W.size());
         if(tmp.size() == 0) return Solution();
@@ -190,9 +218,6 @@ Solution AlgoProgressive(const Graph& graph, int radius, int solCard){
         }
         solution.centers = centers;
         int missingVertices = isSolutionNotRealisable(graph, radius, solution);
-        // for(auto v:centers)
-        //     std::cout<<v<<" ";
-        // std::cout<<" centers missing vertex: "<<missingVertices<<"\n";
         if(missingVertices == -1)
         {
              return solution;
