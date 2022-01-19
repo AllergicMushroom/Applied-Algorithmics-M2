@@ -6,6 +6,7 @@
 #include "AlgorithmDynamicProgramming.hpp"
 #include "AlgorithmMIP.hpp"
 #include "AlgorithmMIP2.hpp"
+#include "ProgressiveAlgorithm.hpp"
 #include "Checker.hpp"
 #include "FileIO.hpp"
 #include "Graph.hpp"
@@ -45,7 +46,8 @@ int main()
     }
     else
     {
-        std::string filename = "data/graphs/graph2.txt";
+        int radius = 3;
+        std::string filename = "data/graphs/graph4.txt";
 
         Graph graph = FileIO::readGraph(filename);
         if (graph.getNbVertices() <= 20)
@@ -58,12 +60,32 @@ int main()
 
         bool useBruteForce = false;
         bool useMIP1 = false;
-        bool useMIP2 = true;
+        bool useMIP2 = false;
         bool useBranchAndBound = false;
-        bool useDynProg = true;
+        bool useDynProg = false;
+        bool useProgAlg = true;
 
-        int radius = 5;
 
+        if (useProgAlg)
+        {
+            auto begin = std::chrono::steady_clock::now();
+            Algorithm* bf = new ProgressiveAlgorithm();
+            Solution s = bf->solveMinCenters(graph, radius);
+            auto end = std::chrono::steady_clock::now();
+
+            std::cout << "Time used by Progressive Algorithm: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000.0 << " ms" << std::endl;
+
+            if (s.isValid)
+            {
+                std::cout << "Solution validity by algorithm: " << s.isValid << '\n';
+                std::cout << "Solution validity by checker: " << checker.checkSolutionMinCenters(graph, s, radius) << '\n';
+                std::cout << "Computed solution:\n";
+                std::cout << s;
+                std::cout << std::endl;
+            }
+        }
+
+        // 57 460469 ms
         if (useBruteForce)
         {
             auto begin = std::chrono::steady_clock::now();
@@ -75,7 +97,7 @@ int main()
 
             if (s.isValid)
             {
-                std::cout << "Solution validity by algorihtm: " << s.isValid << '\n';
+                std::cout << "Solution validity by algorithm: " << s.isValid << '\n';
                 std::cout << "Solution validity by checker: " << checker.checkSolutionMinCenters(graph, s, radius) << '\n';
                 std::cout << "Computed solution:\n";
                 std::cout << s;
@@ -94,7 +116,7 @@ int main()
 
             if (s.isValid)
             {
-                std::cout << "Solution validity by algorihtm: " << s.isValid << '\n';
+                std::cout << "Solution validity by algorithm: " << s.isValid << '\n';
                 std::cout << "Solution validity by checker: " << checker.checkSolutionMinCenters(graph, s, radius) << '\n';
                 std::cout << "Computed solution:\n";
                 std::cout << s;
