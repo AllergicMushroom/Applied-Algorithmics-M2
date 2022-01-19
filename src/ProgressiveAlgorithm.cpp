@@ -4,15 +4,15 @@
 #include <algorithm>
 #include <math.h> 
 
-std::vector<int> generateProfils(const Graph& graph, int radius, const std::vector<int>& W){
-    std::vector<int> profils(graph.getNbVertices(),0);
+std::vector<unsigned long> generateProfils(const Graph& graph, int radius, const std::vector<int>& W){
+    std::vector<unsigned long> profils(graph.getNbVertices(),0);
     for (int vertex = 0; vertex < graph.getNbVertices(); vertex++)
     {
         for (int uIndex = 0; uIndex < W.size(); uIndex++)
         {
             int u = W.at(uIndex);
             if(graph.getDistance(vertex,u) <= radius){
-                int mask = 1 << uIndex;
+                unsigned long mask = 1 << uIndex;
                 profils.at(vertex) = profils.at(vertex)|mask;
             }
         }
@@ -21,20 +21,20 @@ std::vector<int> generateProfils(const Graph& graph, int radius, const std::vect
     return profils;
 }
 
-void updateProfils(const Graph& graph, std::vector<int>& profils, int radius, std::vector<int>& W){
+void updateProfils(const Graph& graph, std::vector<unsigned long>& profils, int radius, std::vector<int>& W){
     for (int vertex = 0; vertex < graph.getNbVertices(); vertex++)
     {
         int u = W.at(W.size()-1);
         if(graph.getDistance(vertex,u) <= radius){
-            int mask = 1 << (W.size()-1);
+            unsigned long mask = 1 << (W.size()-1);
             profils.at(vertex) = profils.at(vertex)|mask;
         }
         
     }
 }
 
-bool checkSol(std::vector<bool> &sol, std::vector<int>& profils, std::vector<int> &usefullIndices, int sizeW){
-    int value = 0;
+bool checkSol(std::vector<bool> &sol, std::vector<unsigned long>& profils, std::vector<int> &usefullIndices, int sizeW){
+    unsigned long value = 0;
     for (int index = 0; index < sol.size(); index++)
     {
         if(sol.at(index))
@@ -45,7 +45,7 @@ bool checkSol(std::vector<bool> &sol, std::vector<int>& profils, std::vector<int
 
 // TODO take initial solution as parameter. Since the sol s returned by BruteForceW over W is the first valid one encountered, no solution before s will cover W Union {u}, so we can restart the algo from the previous sol.
 // TODO maybe design a better algorithm, like branch n bound.
-std::vector<bool> BruteForceW(std::vector<int> &profils, std::vector<int>& usefullIndices, int sizeSol, int sizeW)
+std::vector<bool> BruteForceW(std::vector<unsigned long> &profils, std::vector<int>& usefullIndices, int sizeSol, int sizeW)
 {
     bool debug = false;
 
@@ -115,7 +115,7 @@ std::vector<bool> BruteForceW(std::vector<int> &profils, std::vector<int>& usefu
     return sol;
 }
 
-std::vector<int> cleanProfiles(std::vector<int> profils,bool displayProfils=false){
+std::vector<int> cleanProfiles(std::vector<unsigned long> profils,bool displayProfils=false){
     std::vector<int> sortedUniqueProfilsIndices(profils.size());
     std::iota(std::begin(sortedUniqueProfilsIndices), std::end(sortedUniqueProfilsIndices), 0);
     sort(sortedUniqueProfilsIndices.begin(), sortedUniqueProfilsIndices.end(), [profils](const int lhs, const int rhs){
@@ -165,9 +165,10 @@ Solution AlgoProgressive(const Graph& graph, int radius, int solCard){
     int trueSolCard = solCard;
     std::vector<int> W{0, graph.getNbVertices()-1};
 
-    std::vector<int> profils = generateProfils(graph, radius, W);
+    std::vector<unsigned long> profils = generateProfils(graph, radius, W);
     while(W.size() <= graph.getNbVertices())
     {
+        std::cout<<"W size: "<<W.size()<<"\n";
         if(displayProfils){
             std::cout<<"profils:\n";
             for (int vertex = 0; vertex < graph.getNbVertices(); vertex++)
