@@ -19,7 +19,7 @@ void printUsage(std::string name)
 }
 
 // Development main
-int main()
+int main(int argc, char *argv[])
 {
     if constexpr (false)
     {
@@ -47,7 +47,9 @@ int main()
     else
     {
         int radius = 3;
-        std::string filename = "data/graphs/graph4.txt";
+        std::string filename = "data/graphs/grids/grid_10x10.txt";
+        if(argc > 1)
+            filename = argv[1];
 
         Graph graph = FileIO::readGraph(filename);
         if (graph.getNbVertices() <= 20)
@@ -63,8 +65,26 @@ int main()
         bool useMIP2 = false;
         bool useBranchAndBound = false;
         bool useDynProg = false;
-        bool useProgAlg = true;
+        bool useProgAlg = false;
 
+        if(argc>2)
+        {
+            std::string algo = argv[2];
+            if(algo.compare("BF") == 0)
+                useBruteForce = true;
+            if(algo.compare("MIP1") == 0)
+                useMIP1 = true;
+            if(algo.compare("MIP2") == 0)
+                useMIP2 = true;
+            if(algo.compare("BB") == 0)
+                useBranchAndBound = true;
+            if(algo.compare("DP") == 0)
+                useDynProg = true;
+            if(algo.compare("PA") == 0)
+                useProgAlg = true;
+        }
+        else
+            useMIP2 = true;
 
         if (useProgAlg)
         {
@@ -85,7 +105,6 @@ int main()
             }
         }
 
-        // 57 460469 ms
         if (useBruteForce)
         {
             auto begin = std::chrono::steady_clock::now();
