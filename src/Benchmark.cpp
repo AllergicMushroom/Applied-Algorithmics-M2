@@ -1,56 +1,32 @@
 #include <iostream>
-
 #include "Algorithm.hpp"
 #include "AlgorithmBranchAndBound.hpp"
 #include "AlgorithmBruteForce.hpp"
 #include "AlgorithmDynamicProgramming.hpp"
 #include "AlgorithmMIP.hpp"
 #include "AlgorithmMIP2.hpp"
-#include "ProgressiveAlgorithm.hpp"
 #include "Checker.hpp"
 #include "FileIO.hpp"
 #include "Graph.hpp"
 
 #include <chrono>
 
-void printUsage(std::string name)
+// benchmark
+int benchmark()
 {
-    std::cout << "Usage: " << name << " <filename> <settings file if instance is bmp>\n";
-}
+    bool useBruteForce = false;
+    bool useMIP1 = false;
+    bool useMIP2 = true;
+    bool useBranchAndBound = false;
+    bool useDynProg = false;
 
-// Development main
-int main(int argc, char *argv[])
-{
-    if constexpr (false)
-    {
-        std::string img = "data/Img1.ppm";
-        std::string config = "data/Config1.txt";
+    int radius = 4;
 
-        auto begin = std::chrono::steady_clock::now();
-        Settings settings = FileIO::readSettings(config);
-        auto end = std::chrono::steady_clock::now();
-        std::cout << "Time reading settings: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000.0 << " ms" << std::endl;
-
-        std::cout << "Instance Settings:\n";
-        std::cout << settings;
-
-        begin = std::chrono::steady_clock::now();
-        Graph graph = FileIO::readBMP(img, settings);
-        end = std::chrono::steady_clock::now();
-        std::cout << "Time reading image: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000.0 << " ms" << std::endl;
-
-        if (graph.getNbVertices() <= 100)
-        {
-            std::cout << graph;
-        }
+    std::vector<std::string> filenames = {};
+    for (int i = 1; i < 15; ++i) {
+        filenames.push_back("data/graphs/graph"+ std::to_string(i)+".txt");
     }
-    else
-    {
-        int radius = 6;
-        std::string filename = "data/graphs/grids/grid_10x10.txt";
-        if(argc > 1)
-            filename = argv[1];
-
+    for(const auto& filename:filenames){
         Graph graph = FileIO::readGraph(filename);
         if (graph.getNbVertices() <= 20)
         {
@@ -59,51 +35,6 @@ int main(int argc, char *argv[])
         }
 
         Checker checker;
-
-        bool useBruteForce = false;
-        bool useMIP1 = false;
-        bool useMIP2 = false;
-        bool useBranchAndBound = false;
-        bool useDynProg = false;
-        bool useProgAlg = false;
-
-        if(argc>2)
-        {
-            std::string algo = argv[2];
-            if(algo.compare("BF") == 0)
-                useBruteForce = true;
-            if(algo.compare("MIP1") == 0)
-                useMIP1 = true;
-            if(algo.compare("MIP2") == 0)
-                useMIP2 = true;
-            if(algo.compare("BB") == 0)
-                useBranchAndBound = true;
-            if(algo.compare("DP") == 0)
-                useDynProg = true;
-            if(algo.compare("PA") == 0)
-                useProgAlg = true;
-        }
-        else
-            useMIP2 = true;
-
-        if (useProgAlg)
-        {
-            auto begin = std::chrono::steady_clock::now();
-            Algorithm* bf = new ProgressiveAlgorithm();
-            Solution s = bf->solveMinCenters(graph, radius);
-            auto end = std::chrono::steady_clock::now();
-
-            std::cout << "Time used by Progressive Algorithm: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000.0 << " ms" << std::endl;
-
-            if (s.isValid)
-            {
-                std::cout << "Solution validity by algorithm: " << s.isValid << '\n';
-                std::cout << "Solution validity by checker: " << checker.checkSolutionMinCenters(graph, s, radius) << '\n';
-                std::cout << "Computed solution ("<<s.centers.size()<<"): ";
-                std::cout << s;
-                std::cout << std::endl;
-            }
-        }
 
         if (useBruteForce)
         {
@@ -118,7 +49,7 @@ int main(int argc, char *argv[])
             {
                 std::cout << "Solution validity by algorithm: " << s.isValid << '\n';
                 std::cout << "Solution validity by checker: " << checker.checkSolutionMinCenters(graph, s, radius) << '\n';
-                std::cout << "Computed solution ("<<s.centers.size()<<"): ";
+                std::cout << "Computed solution:\n";
                 std::cout << s;
                 std::cout << std::endl;
             }
@@ -137,7 +68,7 @@ int main(int argc, char *argv[])
             {
                 std::cout << "Solution validity by algorithm: " << s.isValid << '\n';
                 std::cout << "Solution validity by checker: " << checker.checkSolutionMinCenters(graph, s, radius) << '\n';
-                std::cout << "Computed solution ("<<s.centers.size()<<"): ";
+                std::cout << "Computed solution:\n";
                 std::cout << s;
                 std::cout << std::endl;
             }
@@ -156,7 +87,7 @@ int main(int argc, char *argv[])
             {
                 std::cout << "Solution validity by algorihtm: " << s.isValid << '\n';
                 std::cout << "Solution validity by checker: " << checker.checkSolutionMinCenters(graph, s, radius) << '\n';
-                std::cout << "Computed solution ("<<s.centers.size()<<"): ";
+                std::cout << "Computed solution:\n";
                 std::cout << s;
                 std::cout << std::endl;
             }
@@ -175,7 +106,7 @@ int main(int argc, char *argv[])
             {
                 std::cout << "Solution validity by algorihtm: " << s.isValid << '\n';
                 std::cout << "Solution validity by checker: " << checker.checkSolutionMinCenters(graph, s, radius) << '\n';
-                std::cout << "Computed solution ("<<s.centers.size()<<"): ";
+                std::cout << "Computed solution:\n";
                 std::cout << s;
                 std::cout << std::endl;
             }
@@ -194,13 +125,12 @@ int main(int argc, char *argv[])
             {
                 std::cout << "Solution validity by algorihtm: " << s.isValid << '\n';
                 std::cout << "Solution validity by checker: " << checker.checkSolutionMinCenters(graph, s, radius) << '\n';
-                std::cout << "Computed solution ("<<s.centers.size()<<"): ";
+                std::cout << "Computed solution:\n";
                 std::cout << s;
                 std::cout << std::endl;
             }
         }
     }
-
     return 0;
 }
 
