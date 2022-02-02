@@ -4,6 +4,9 @@
 #include <algorithm>
 #include <math.h> 
 
+#include <sstream>
+#include "gurobi_c++.h"
+
 std::vector<unsigned long> generateProfils(const Graph& graph, int radius, const std::vector<int>& W){
     std::vector<unsigned long> profils(graph.getNbVertices(),0);
     for (int vertex = 0; vertex < graph.getNbVertices(); vertex++)
@@ -43,8 +46,6 @@ bool checkSol(std::vector<bool> &sol, std::vector<unsigned long>& profils, std::
     return value == (pow(2,sizeW)-1);
 }
 
-// TODO take initial solution as parameter. Since the sol s returned by BruteForceW over W is the first valid one encountered, no solution before s will cover W Union {u}, so we can restart the algo from the previous sol.
-// TODO maybe design a better algorithm, like branch n bound.
 std::vector<bool> BruteForceW(std::vector<unsigned long> &profils, std::vector<int>& usefullIndices, int sizeSol, int sizeW)
 {
     bool debug = false;
@@ -113,6 +114,86 @@ std::vector<bool> BruteForceW(std::vector<unsigned long> &profils, std::vector<i
     }
     if(debug) std::cout<<"<ProgressiveAlgorithm::BruteForce> Solution of size " << sizeSol << " found.\n";
     return sol;
+}
+
+std::vector<bool> PLNE(std::vector<unsigned long> &profils, std::vector<int>& usefullIndices, int sizeSol, int sizeW)
+{
+    bool debug = false;
+
+    std::vector<bool> solution(usefullIndices.size());
+
+    GRBVar* x;
+    
+    try
+    {
+        GRBEnv env = GRBEnv(true);
+        env.set(GRB_IntParam_OutputFlag, 0);
+        env.start();
+
+        GRBModel model = GRBModel(env);
+        model.set(GRB_IntParam_OutputFlag, 0);
+       
+        x = new GRBVar[usefullIndices.size()];
+
+        for (int vertex = 0; vertex < usefullIndices.size(); ++vertex)
+        {
+            std::stringstream ss;
+            ss << "x[" << vertex << "]";
+            x[vertex] = model.addVar(0.0, 1.0, 0.0, GRB_BINARY, ss.str());
+        }
+
+        GRBLinExpr obj = 0;
+        for (int vertex = 0; vertex < usefullIndices.size(); ++vertex)
+        {
+            obj += x[vertex];
+        }
+
+        model.setObjective(obj);
+
+        for (int vertex = 0; vertex < sizeW; ++vertex)
+        {
+            GRBLinExpr lhs = 0;
+            for (int center = 0; center < usefullIndices.size(); ++center)
+            {
+                lhs += x[center] * ((profils[usefullIndices[center]] & ( 1 << vertex)) >> vertex);
+            }
+            model.addConstr(lhs >= 1);
+        }
+
+        model.set(GRB_DoubleParam_TimeLimit, 3600.0);
+        model.set(GRB_IntParam_Threads, 8);
+        
+        model.optimize();
+
+        int64_t status = model.get(GRB_IntAttr_Status);
+
+        if (status == GRB_OPTIMAL || (status == GRB_TIME_LIMIT && model.get(GRB_IntAttr_SolCount) > 0))
+        {
+            for (int vertex = 0; vertex < usefullIndices.size(); ++vertex)
+            {
+                if (x[vertex].get(GRB_DoubleAttr_X) > 0.0)
+                {
+                    // std::cout << "x[" << vertex << "]: " << x[vertex].get(GRB_DoubleAttr_X) << '\n';
+                    solution.at(vertex) = 1;
+                }
+            }
+        }
+        else
+        {
+            return std::vector<bool>(0);
+        }
+    }
+    catch (GRBException e)
+    {
+        std::cout << "Gurobi failed with code " << e.getErrorCode() << ".\n";
+        std::cout << e.getMessage() << '\n';
+    }
+    catch (...)
+    {
+        std::cout << "Gurobi failed with unknown exception.\n";
+    }
+    return solution;
+
 }
 
 std::vector<int> cleanProfiles(std::vector<unsigned long> profils,bool displayProfils=false){
@@ -207,7 +288,7 @@ Solution AlgoProgressive(const Graph& graph, int radius, int solCard){
             }
         }
         std::vector<int> sortedUniqueProfilsIndices = cleanProfiles(profils, displayProfils);
-        std::vector<bool> tmp = BruteForceW(profils, sortedUniqueProfilsIndices, solCard, W.size());
+        std::vector<bool> tmp = PLNE(profils, sortedUniqueProfilsIndices, solCard, W.size());
         if(tmp.size() == 0) return Solution();
 
         std::vector<int> centers(0);
