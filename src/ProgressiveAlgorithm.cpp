@@ -29,8 +29,8 @@ void updateProfils(const Graph& graph, std::vector<unsigned long>& profils, int 
     {
         int u = W.at(W.size()-1);
         if(graph.getDistance(vertex,u) <= radius){
-            unsigned long mask = 1 << (W.size()-1);
-            profils.at(vertex) = profils.at(vertex)|mask;
+            unsigned long mask = (unsigned long) 1 << (W.size()-1);
+            profils.at(vertex) = (profils.at(vertex)|mask);
         }
         
     }
@@ -150,12 +150,12 @@ std::vector<bool> PLNE(std::vector<unsigned long> &profils, std::vector<int>& us
 
         model.setObjective(obj);
 
-        for (int vertex = 0; vertex < sizeW; ++vertex)
+        for (unsigned long vertex = 0; vertex < sizeW; ++vertex)
         {
             GRBLinExpr lhs = 0;
             for (int center = 0; center < usefullIndices.size(); ++center)
             {
-                lhs += x[center] * ((profils[usefullIndices[center]] & ( 1 << vertex)) >> vertex);
+                lhs += x[center] * (((profils[usefullIndices[center]] & ((unsigned long )1 << vertex)) == ((unsigned long )1 << vertex)));
             }
             model.addConstr(lhs >= 1);
         }
