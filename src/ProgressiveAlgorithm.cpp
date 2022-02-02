@@ -116,7 +116,7 @@ std::vector<bool> BruteForceW(std::vector<unsigned long> &profils, std::vector<i
     return sol;
 }
 
-std::vector<bool> PLNE(std::vector<unsigned long> &profils, std::vector<int>& usefullIndices, int sizeSol, int sizeW)
+std::vector<bool> PLNE(std::vector<unsigned long> &profils, std::vector<int>& usefullIndices, int sizeW)
 {
     bool debug = false;
 
@@ -269,11 +269,10 @@ int isSolutionNotRealisableFarest(const Graph& graph, int radius, Solution& solu
 }
 
 
-Solution AlgoProgressive(const Graph& graph, int radius, int solCard){
+Solution AlgoProgressive(const Graph& graph, int radius){
     bool displayProfils = false;
     Checker checker;
     Solution solution;
-    int trueSolCard = solCard;
     std::vector<int> W{0, graph.getNbVertices()-1};
 
     std::vector<unsigned long> profils = generateProfils(graph, radius, W);
@@ -288,7 +287,7 @@ Solution AlgoProgressive(const Graph& graph, int radius, int solCard){
             }
         }
         std::vector<int> sortedUniqueProfilsIndices = cleanProfiles(profils, displayProfils);
-        std::vector<bool> tmp = PLNE(profils, sortedUniqueProfilsIndices, solCard, W.size());
+        std::vector<bool> tmp = PLNE(profils, sortedUniqueProfilsIndices, W.size());
         if(tmp.size() == 0) return Solution();
 
         std::vector<int> centers(0);
@@ -298,38 +297,27 @@ Solution AlgoProgressive(const Graph& graph, int radius, int solCard){
                 centers.push_back(sortedUniqueProfilsIndices.at(i));
         }
         solution.centers = centers;
-        int missingVertices = isSolutionNotRealisable(graph, radius, solution);
+        int missingVertices = isSolutionNotRealisableFarest(graph, radius, solution);
         if(missingVertices == -1)
         {
+            std::cout<<"W size: "<< W.size()<<"\n";
              return solution;
         }
 
         W.push_back(missingVertices);
         updateProfils(graph, profils, radius, W);
     }
-    std::cout<<"No solution\n";
+    solution.centers = {};
     return solution;
 }
 
 Solution ProgressiveAlgorithm::solveMinCenters(const Graph& graph, int radius){
-    int lowerBound = 1;
-    int upperBound = graph.getNbVertices();
-    Solution bestSol;
-    while(lowerBound < upperBound){
-        int average = int((upperBound-lowerBound)/2);
-        std::cout<<"<ProgressiveAlgorithm::solveMinCenters> Lower Bound = "<<lowerBound<<" Upper Bound = "<<upperBound<<"\n";
-        Solution sol = AlgoProgressive(graph, radius, lowerBound+average);
-        if(sol.isValid){
-            bestSol = sol;
-            upperBound = lowerBound + average;
-        }
-        else
-            lowerBound = 1+lowerBound+average;
-    }
-    std::cout<<"best sol: \n";
-    for(auto v:bestSol.centers)
-            std::cout<<v<<" ";
-        std::cout<<"\n";
+    Solution bestSol = AlgoProgressive(graph, radius);
+    Checker checker;
+    if( bestSol.centers.size() > 0)
+        bestSol.isValid = checker.checkSolutionMinCenters(graph, bestSol, radius);
+    else
+        std::cout<<"No solution\n";
     return bestSol;
 
 }
