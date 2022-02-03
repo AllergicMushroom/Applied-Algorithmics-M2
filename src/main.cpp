@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-        int radius = 6;
+        int radius = 3;
         std::string filename = "data/graphs/grids/grid_10x10.txt";
         if(argc > 1)
             filename = argv[1];
@@ -85,6 +85,8 @@ int main(int argc, char *argv[])
         }
         else
             useMIP2 = true;
+        if(argc>3)
+            radius = strtol(argv[3], NULL, 10);;
 
         if (useProgAlg)
         {
