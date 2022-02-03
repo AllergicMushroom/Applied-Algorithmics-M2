@@ -384,7 +384,7 @@ Solution AlgorithmMIP2::solveMinRadius(const Graph& graph, int nbCenters)
             {
                 if (x[vertex].get(GRB_DoubleAttr_X) > 0.0)
                 {
-                    std::cout << "x[" << vertex << "]: " << x[vertex].get(GRB_DoubleAttr_X) << '\n';
+                    // std::cout << "x[" << vertex << "]: " << x[vertex].get(GRB_DoubleAttr_X) << '\n';
                     solution.centers.push_back(vertex);
                 }
             }
@@ -395,7 +395,7 @@ Solution AlgorithmMIP2::solveMinRadius(const Graph& graph, int nbCenters)
                 {
                     if (c[vertex1][vertex2].get(GRB_DoubleAttr_X) > 0.0)
                     {
-                        std::cout << "c[" << vertex1 << "][" << vertex2 << "]: " << c[vertex1][vertex2].get(GRB_DoubleAttr_X) << '\n';
+                        // std::cout << "c[" << vertex1 << "][" << vertex2 << "]: " << c[vertex1][vertex2].get(GRB_DoubleAttr_X) << '\n';
                     }
                 }
             }
