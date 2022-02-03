@@ -270,23 +270,13 @@ int isSolutionNotRealisableFarest(const Graph& graph, int radius, Solution& solu
 
 
 Solution AlgoProgressive(const Graph& graph, int radius){
-    bool displayProfils = false;
-    Checker checker;
     Solution solution;
     std::vector<int> W{0, graph.getNbVertices()-1};
 
     std::vector<unsigned long> profils = generateProfils(graph, radius, W);
     while(W.size() <= graph.getNbVertices())
     {
-        if(displayProfils){
-            std::cout<<"profils:\n";
-            for (int vertex = 0; vertex < graph.getNbVertices(); vertex++)
-            {
-                std::cout<<profils.at(vertex)<<" ";
-                std::cout<<"\n";
-            }
-        }
-        std::vector<int> sortedUniqueProfilsIndices = cleanProfiles(profils, displayProfils);
+        std::vector<int> sortedUniqueProfilsIndices = cleanProfiles(profils);
         std::vector<bool> tmp = PLNE(profils, sortedUniqueProfilsIndices, W.size());
         if(tmp.size() == 0) return Solution();
 
