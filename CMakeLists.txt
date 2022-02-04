@@ -31,16 +31,16 @@ if (WIN32)
     set(GUROBI_LIBRARIES ${GUROBI_LIBRARY_CPLUS} ${GUROBI_LIBRARY})
 else ()
     # ATTENTION -> Il faut modifier le chemin GUROBI_ROOT ci-dessous
-    set(GUROBI_ROOT "/opt/gurobi912/linux64/")
+    set(GUROBI_ROOT "/opt/gurobi/gurobi950/linux64/")
 
     # On cr�� une variable stockant le dossier o� se situent les fichiers en-t�te du solveur GUROBI (pour la compilation)
     set(GUROBI_INCLUDE_DIR "${GUROBI_ROOT}/include")
     message(STATUS "GUROBI_INCLUDE_DIR : ${GUROBI_INCLUDE_DIR}") #On affiche le dossier pr�c�dent (pour DEBUG)
 
-    set(GUROBI_LIBRARY "${GUROBI_ROOT}/lib/libgurobi91.so")
     set(GUROBI_LIBRARY_CPLUS "${GUROBI_ROOT}/lib/libgurobi_c++.a")
+    set(GUROBI_LIBRARY "${GUROBI_ROOT}/lib/libgurobi95.so")
 
-    set(GUROBI_LIBRARIES  ${GUROBI_LIBRARY} ${GUROBI_LIBRARY_CPLUS})
+    set(GUROBI_LIBRARIES ${GUROBI_LIBRARY_CPLUS} ${GUROBI_LIBRARY})
 endif()
 message(STATUS "GUROBI_LIBRARIES : ${GUROBI_LIBRARIES}")
 

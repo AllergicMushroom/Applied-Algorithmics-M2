@@ -46,7 +46,7 @@ Each PPM file is associated with a config text file:
 #### Graph files
 
 ```
-0: 3 5 7 
+0: 3 5 7
 1: 2 3
 2: 1 4 ...
 ...
@@ -85,9 +85,11 @@ For graph instances:
 
 We have multiple solvers:
 
-* Brute Force, represented by "BB"
-* Mixed Integer Programming, represented by "MIP". Note that this is solved by the commercial solver Gurobi, for which you need a licence.
-* Others to come
+* Brute Force, represented by "BB".
+* Mixed Integer Programming. Note that this is solved by the commercial solver Gurobi, for which you need a licence. We have 2 versions, represented by "MIP1" and "MIP2". "MIP2" is more efficient.
+* Dynamic Program, represented by "DP".
+* Branch and Bound, represented by "BB".
+* Progressive Algorithm, represented by "PA". This algorithm also requires Gurobi.
 
 For PPM instances:
 
@@ -95,4 +97,5 @@ For PPM instances:
 
 For graph instances:
 
-`<executable> solver <algorithm> <instance file> <output file>`
+`<executable> solver <instance file> <algorithm> <radius>`
+ex: ./AppliedAlgorithmics ../data/graphs/grid/grid_6x6.txt PA 3
